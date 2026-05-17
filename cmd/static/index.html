@@ -20,8 +20,10 @@
             color: #333;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 20px 0;
         }
 
         .container {
@@ -168,6 +170,122 @@
                 transform: rotate(360deg);
             }
         }
+
+        .guide-wrapper {
+            width: 520px;
+            margin-top: 16px;
+        }
+
+        .guide-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #888;
+            transition: all 0.2s;
+        }
+
+        .guide-toggle:hover {
+            color: #4a90d9;
+            border-color: #4a90d9;
+        }
+
+        .guide-toggle .arrow {
+            transition: transform 0.2s;
+            font-size: 10px;
+        }
+
+        .guide-toggle.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .guide {
+            display: none;
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 24px 28px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        .guide.open {
+            display: block;
+        }
+
+        .guide h3 {
+            font-size: 14px;
+            color: #333;
+            margin: 18px 0 8px;
+        }
+
+        .guide h3:first-child {
+            margin-top: 0;
+        }
+
+        .guide ol {
+            padding-left: 20px;
+            margin: 6px 0;
+        }
+
+        .guide ol li {
+            margin-bottom: 4px;
+        }
+
+        .guide kbd {
+            display: inline-block;
+            padding: 1px 6px;
+            font-size: 12px;
+            font-family: "Cascadia Code", "Consolas", monospace;
+            color: #555;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 1px 0 #ccc;
+        }
+
+        .guide a {
+            color: #4a90d9;
+            text-decoration: none;
+        }
+
+        .guide a:hover {
+            text-decoration: underline;
+        }
+
+        .guide table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .guide th,
+        .guide td {
+            border: 1px solid #e8e8e8;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .guide th {
+            background: #fafafa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .guide .emoji {
+            margin-right: 4px;
+        }
     </style>
 </head>
 
@@ -188,6 +306,59 @@
         <button class="btn btn-start" id="startBtn" onclick="startPolling()">🚀 获取消息</button>
 
         <div id="result"></div>
+    </div>
+
+    <div class="guide-wrapper">
+        <button class="guide-toggle" id="guideToggle" onclick="toggleGuide()">
+            <span class="arrow">▼</span> 使用说明
+        </button>
+        <div class="guide" id="guideContent">
+            <h3><span class="emoji">🚀</span>快速开始</h3>
+            <ol>
+                <li>打开 <a href="https://www.doubao.com" target="_blank">豆包网页版</a>，登录并进入一个对话</li>
+                <li>按 <kbd>F12</kbd> 打开开发者工具 → <strong>Network</strong> / <strong>网络</strong> 标签</li>
+                <li>在对话中发送一条消息，找到 <code>single</code>（<code>https://www.doubao.com/im/chain/single</code>）请求</li>
+                <li>右键该请求 → <strong>Copy</strong> / <strong>复制</strong> → <strong>Copy as cURL (Bash)</strong> /
+                    <strong>复制为 cURL (Bash)</strong>
+                </li>
+                <li>在打开的浏览器页面中，粘贴从豆包复制的 cURL 内容</li>
+                <li>点击「💾 保存配置」，然后点击「🚀 获取消息」测试是否正常</li>
+            </ol>
+
+            <h3><span class="emoji">🎤</span>使用方法</h3>
+            <ol>
+                <li>在手机上对着豆包的同一个对话说话</li>
+                <li>按 <kbd>Ctrl</kbd> + <kbd>V</kbd> 粘贴到任何输入框中，享受语音输入的便利！</li>
+            </ol>
+
+            <h3><span class="emoji">⚙️</span>系统托盘</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>菜单项</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>打开设置页面</td>
+                        <td>启动 Web 服务并自动打开浏览器</td>
+                    </tr>
+                    <tr>
+                        <td>关闭设置页面</td>
+                        <td>停止 Web 服务</td>
+                    </tr>
+                    <tr>
+                        <td>开机自启</td>
+                        <td>注册/注销 Windows 服务，实现开机自动运行（需要以管理员身份注册）</td>
+                    </tr>
+                    <tr>
+                        <td>退出</td>
+                        <td>退出程序</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
@@ -251,7 +422,7 @@
                     lastTime = new Date();
                     const now = lastTime.toLocaleString('sv-SE', { hour12: false });
                     showResult(
-                        '<div class="result-time">' + now + ' <span id="relativeTime">（刚刚）</span></div>' + escapeHtml(data.message),
+                        '<div class="result-time">' + now + ' <span id="relativeTime">（刚刚）</span> 按下 Ctrl-V 可直接粘贴</div>' + escapeHtml(data.message),
                         'msg'
                     );
                 } else {
@@ -283,6 +454,14 @@
             const d = document.createElement('div');
             d.textContent = t;
             return d.innerHTML;
+        }
+
+        // 使用说明展开/收起
+        function toggleGuide() {
+            const toggle = document.getElementById('guideToggle');
+            const content = document.getElementById('guideContent');
+            toggle.classList.toggle('open');
+            content.classList.toggle('open');
         }
     </script>
 </body>

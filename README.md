@@ -35,11 +35,9 @@
 2. 按 `F12` 打开开发者工具 → **Network** / **网络** 标签
 3. 在对话中发送一条消息，找到 `single` (`https://www.doubao.com/im/chain/single`) 请求
 4. 右键该请求 → **Copy** / **复制** → **Copy as cURL (Bash)** / **复制为 cURL (Bash)**
-5. 右键系统托盘图标 → 点击「打开设置页面」
+5. 双击运行 `doubao-input.exe`
 6. 在打开的浏览器页面中，按照提示粘贴从豆包复制的 cURL 内容
 7. 点击「💾 保存配置」，然后点击「🚀 获取消息」测试是否正常
-
-### 2. 双击运行 `doubao-input.exe`
 
 ### 3. 在手机上对着豆包的同一个对话说话
 
