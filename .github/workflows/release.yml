@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,10 +28,10 @@ jobs:
             suffix: ''
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25'
 
@@ -46,7 +43,7 @@ jobs:
         run: go build -ldflags="-s -w" -o doubao-input-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }} .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: doubao-input-${{ matrix.goos }}-${{ matrix.goarch }}
           path: doubao-input-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
@@ -56,15 +53,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           files: |
