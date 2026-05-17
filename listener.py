@@ -1,8 +1,7 @@
 """豆包获取最新一次发送的消息"""
 
 import requests
-
-from config import URL, PARAMS, HEADERS, COOKIES, PAYLOAD
+from curl_parser import get_config
 
 _last_message_id = ""
 
@@ -11,9 +10,9 @@ def poll_new_message():
     """轮询一次，有新用户消息返回 tts_content，无则返回 None"""
     global _last_message_id
 
-    payload = PAYLOAD.copy()
+    url, params, headers, cookies, payload = get_config()
 
-    response = requests.post(URL, params=PARAMS, headers=HEADERS, cookies=COOKIES, json=payload)
+    response = requests.post(url, params=params, headers=headers, cookies=cookies, json=payload)
 
     if response.status_code != 200:
         return None
@@ -31,3 +30,8 @@ def poll_new_message():
             return latest["tts_content"]
 
     return None
+
+
+if __name__ == "__main__":
+    msg = poll_new_message()
+    print(msg)
