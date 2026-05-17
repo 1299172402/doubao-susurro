@@ -88,5 +88,5 @@ func GetLatestMessage(config *CurlConfig) (string, string, error) {
 		}
 	}
 
-	return "", "", nil
+	return "", "", fmt.Errorf("未找到用户消息：%s", string(body))
 }

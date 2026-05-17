@@ -168,72 +168,6 @@
                 transform: rotate(360deg);
             }
         }
-
-        #toastBox {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            pointer-events: none;
-        }
-
-        .toast {
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            line-height: 1.5;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-            animation: toastIn 0.25s ease;
-            pointer-events: auto;
-        }
-
-        .toast-ok {
-            background: #7ce14a;
-            color: #fff;
-        }
-
-        .toast-err {
-            background: #ff4d4f;
-            color: #fff;
-        }
-
-        .toast-msg {
-            background: #4a90d9;
-            color: #fff;
-        }
-
-        .toast-hide {
-            animation: toastOut 0.25s ease forwards;
-        }
-
-        @keyframes toastIn {
-            from {
-                opacity: 0;
-                transform: translateY(-16px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes toastOut {
-            from {
-                opacity: 1;
-                transform: translateY(0);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateY(-16px);
-            }
-        }
     </style>
 </head>
 
@@ -250,8 +184,8 @@
         <label>Session (curl 命令)</label>
         <textarea id="sessionInput" placeholder="将浏览器中复制的 curl 命令粘贴到这里..."></textarea>
 
-        <button class="btn btn-save" id="saveBtn" onclick="saveSession()">💾 保存配置</button>
-        <button class="btn btn-start" id="startBtn" onclick="startPolling()">🚀 开始连接</button>
+        <button class="btn btn-save" onclick="saveSession()">💾 保存配置</button>
+        <button class="btn btn-start" id="startBtn" onclick="startPolling()">🚀 获取消息</button>
 
         <div id="result"></div>
     </div>
@@ -259,9 +193,7 @@
     <script>
         const resultEl = document.getElementById('result');
         const startBtn = document.getElementById('startBtn');
-        const toastBox = document.getElementById('toastBox');
-        let polling = false;
-        let pollTimer = null;
+        let lastTime = null;
 
         // 加载 session
         fetch('/api/session').then(r => r.json()).then(d => {
@@ -273,64 +205,73 @@
             document.getElementById('version').textContent = '版本：' + (d.version || 'dev');
         });
 
+        // 定时更新相对时间
+        setInterval(() => {
+            if (lastTime) {
+                const relEl = document.getElementById('relativeTime');
+                if (relEl) relEl.textContent = '（' + timeAgo(lastTime) + '）';
+            }
+        }, 1000);
+
         // 保存 session
         async function saveSession() {
             const content = document.getElementById('sessionInput').value.trim();
-            if (!content) { showToast('请先输入 session 内容', 'err'); return; }
+            if (!content) { showResult('请先输入 session 内容', 'err'); return; }
             const res = await fetch('/api/session/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
             });
             const data = await res.json();
-            showToast(data.ok ? '✅ 保存成功' : '❌ 保存失败', data.ok ? 'ok' : 'err');
+            showResult(data.ok ? '✅ 保存成功' : '❌ 保存失败', data.ok ? 'ok' : 'err');
         }
 
-        // 开始/停止轮询
+        // 获取一次消息
         async function startPolling() {
-            if (polling) {
-                polling = false;
-                clearInterval(pollTimer);
-                startBtn.textContent = '🚀 开始连接';
-                startBtn.disabled = false;
-                showToast('已停止监听', 'ok');
-                return;
-            }
+            const content = document.getElementById('sessionInput').value.trim();
+            if (!content) { showResult('请先输入 session 内容', 'err'); return; }
 
             // 先保存
-            const content = document.getElementById('sessionInput').value.trim();
-            if (!content) { showToast('请先输入 session 内容', 'err'); return; }
             await fetch('/api/session/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
             });
 
-            polling = true;
-            startBtn.textContent = '⏹ 停止连接';
-            showResult('<span class="spinner"></span> 正在连接...', 'msg');
+            startBtn.disabled = true;
+            startBtn.textContent = '⏳ 获取中...';
+            showResult('<span class="spinner"></span> 正在获取...', 'msg');
 
-            // 立即请求一次
-            await doPoll();
-            // 然后每秒轮询
-            pollTimer = setInterval(doPoll, 1000);
-        }
-
-        async function doPoll() {
             try {
                 const res = await fetch('/api/poll');
                 const data = await res.json();
                 if (data.error) {
-                    showToast('❌ ' + data.error, 'err');
-                    return;
-                }
-                if (data.message) {
-                    const now = new Date().toLocaleString('sv-SE', { hour12: false });
-                    showResult('<div class="result-time">' + now + '</div>' + escapeHtml(data.message), 'msg');
+                    showResult('❌ ' + data.error, 'err');
+                } else if (data.message) {
+                    lastTime = new Date();
+                    const now = lastTime.toLocaleString('sv-SE', { hour12: false });
+                    showResult(
+                        '<div class="result-time">' + now + ' <span id="relativeTime">（刚刚）</span></div>' + escapeHtml(data.message),
+                        'msg'
+                    );
+                } else {
+                    showResult('暂无新消息', 'msg');
                 }
             } catch (e) {
-                showToast('❌ 请求失败: ' + e.message, 'err');
+                showResult('❌ 请求失败: ' + e.message, 'err');
             }
+
+            startBtn.disabled = false;
+            startBtn.textContent = '🚀 获取消息';
+        }
+
+        function timeAgo(date) {
+            const secs = Math.floor((new Date() - date) / 1000);
+            if (secs < 5) return '刚刚';
+            if (secs < 60) return secs + ' 秒前';
+            if (secs < 3600) return Math.floor(secs / 60) + ' 分钟前';
+            if (secs < 86400) return Math.floor(secs / 3600) + ' 小时前';
+            return Math.floor(secs / 86400) + ' 天前';
         }
 
         function showResult(html, type) {
@@ -342,17 +283,6 @@
             const d = document.createElement('div');
             d.textContent = t;
             return d.innerHTML;
-        }
-
-        function showToast(msg, type) {
-            const el = document.createElement('div');
-            el.className = 'toast toast-' + type;
-            el.textContent = msg;
-            toastBox.appendChild(el);
-            setTimeout(() => {
-                el.classList.add('toast-hide');
-                el.addEventListener('animationend', () => el.remove());
-            }, 3000);
         }
     </script>
 </body>
