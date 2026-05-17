@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doubao Input</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "Microsoft YaHei", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 520px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 40px 36px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .version {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            background: #fafafa;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: "Cascadia Code", "Consolas", monospace;
+            font-size: 12px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-save:hover {
+            background: #e4e4e4;
+        }
+
+        .btn-start {
+            background: #4a90d9;
+            color: #fff;
+        }
+
+        .btn-start:hover {
+            background: #3a7bc8;
+        }
+
+        .btn-start:disabled {
+            background: #a0c4e8;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: left;
+            display: none;
+        }
+
+        .result-ok {
+            background: #e6f7e6;
+            color: #389e0d;
+            border: 1px solid #b7eb8f;
+            display: block;
+        }
+
+        .result-err {
+            background: #fff2f0;
+            color: #cf1322;
+            border: 1px solid #ffa39e;
+            display: block;
+        }
+
+        .result-msg {
+            background: #f0f5ff;
+            color: #1d39c4;
+            border: 1px solid #adc6ff;
+            display: block;
+        }
+
+        .result-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ddd;
+            border-top-color: #4a90d9;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">🥟</div>
+        <div class="title">Doubao Input</div>
+        <div class="version" id="version"></div>
+
+        <label>Session (curl 命令)</label>
+        <textarea id="sessionInput" placeholder="将浏览器中复制的 curl 命令粘贴到这里..."></textarea>
+
+        <button class="btn btn-save" onclick="saveSession()">💾 保存配置</button>
+        <button class="btn btn-start" id="startBtn" onclick="startPolling()">🚀 开始连接</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const resultEl = document.getElementById('result');
+        const startBtn = document.getElementById('startBtn');
+        let polling = false;
+        let pollTimer = null;
+
+        // 加载 session
+        fetch('/api/session').then(r => r.json()).then(d => {
+            document.getElementById('sessionInput').value = d.content || '';
+        });
+
+        // 版本号
+        fetch('/api/version').then(r => r.json()).then(d => {
+            document.getElementById('version').textContent = (d.version || 'dev');
+        });
+
+        // 保存 session
+        async function saveSession() {
+            const content = document.getElementById('sessionInput').value.trim();
+            if (!content) { showResult('请先输入 session 内容', 'err'); return; }
+            const res = await fetch('/api/session/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+            const data = await res.json();
+            showResult(data.ok ? '✅ 保存成功，下次启动自动使用' : '❌ 保存失败', data.ok ? 'ok' : 'err');
+        }
+
+        // 开始/停止轮询
+        async function startPolling() {
+            if (polling) {
+                polling = false;
+                clearInterval(pollTimer);
+                startBtn.textContent = '🚀 开始连接';
+                startBtn.disabled = false;
+                showResult('已停止监听', 'ok');
+                return;
+            }
+
+            // 先保存
+            const content = document.getElementById('sessionInput').value.trim();
+            if (!content) { showResult('请先输入 session 内容', 'err'); return; }
+            await fetch('/api/session/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content })
+            });
+
+            polling = true;
+            startBtn.textContent = '⏹ 停止连接';
+            showResult('<span class="spinner"></span> 正在连接...', 'msg');
+
+            // 立即请求一次
+            await doPoll();
+            // 然后每秒轮询
+            pollTimer = setInterval(doPoll, 1000);
+        }
+
+        async function doPoll() {
+            try {
+                const res = await fetch('/api/poll');
+                const data = await res.json();
+                if (data.error) {
+                    showResult('❌ ' + data.error, 'err');
+                    return;
+                }
+                if (data.message) {
+                    const now = new Date().toLocaleString('sv-SE', { hour12: false });
+                    showResult('<div class="result-time">' + now + '</div>' + escapeHtml(data.message), 'msg');
+                }
+            } catch (e) {
+                showResult('❌ 请求失败: ' + e.message, 'err');
+            }
+        }
+
+        function showResult(html, type) {
+            resultEl.className = 'result result-' + type;
+            resultEl.innerHTML = html;
+        }
+
+        function escapeHtml(t) {
+            const d = document.createElement('div');
+            d.textContent = t;
+            return d.innerHTML;
+        }
+    </script>
+</body>
+
+</html>

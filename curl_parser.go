@@ -100,6 +100,11 @@ func ParseCurl(curlStr string) (*CurlConfig, error) {
 	return config, nil
 }
 
+// SaveCurlFile 将 curl 命令写入文件
+func SaveCurlFile(path string, content string) error {
+	return os.WriteFile(path, []byte(content), 0644)
+}
+
 // GetConfig 从 session.txt 解析配置
 func GetConfig(filePath string) (*CurlConfig, error) {
 	curlStr, err := ReadCurlFile(filePath)

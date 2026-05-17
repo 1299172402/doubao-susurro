@@ -9,8 +9,6 @@ import (
 	"net/url"
 )
 
-var lastMessageID string
-
 // MessageResponse API 响应结构
 type MessageResponse struct {
 	DownlinkBody struct {
@@ -24,12 +22,12 @@ type MessageResponse struct {
 	} `json:"downlink_body"`
 }
 
-// PollNewMessage 轮询一次，有新用户消息返回文本，无则返回空字符串
-func PollNewMessage(config *CurlConfig) (string, error) {
+// GetLatestMessage 获取最新一条用户消息，返回消息 ID 和文本内容
+func GetLatestMessage(config *CurlConfig) (string, string, error) {
 	// 构建请求体
 	payloadBytes, err := json.Marshal(config.Payload)
 	if err != nil {
-		return "", fmt.Errorf("序列化 payload 失败: %w", err)
+		return "", "", fmt.Errorf("序列化 payload 失败: %w", err)
 	}
 
 	// 构建完整 URL（带参数）
@@ -45,7 +43,7 @@ func PollNewMessage(config *CurlConfig) (string, error) {
 	// 创建请求
 	req, err := http.NewRequest("POST", reqURL, bytes.NewReader(payloadBytes))
 	if err != nil {
-		return "", fmt.Errorf("创建请求失败: %w", err)
+		return "", "", fmt.Errorf("创建请求失败: %w", err)
 	}
 
 	// 设置 headers
@@ -62,37 +60,33 @@ func PollNewMessage(config *CurlConfig) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("请求失败: %w", err)
+		return "", "", fmt.Errorf("请求失败: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", nil
+		return "", "", nil
 	}
 
 	// 读取响应
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("读取响应失败: %w", err)
+		return "", "", fmt.Errorf("读取响应失败: %w", err)
 	}
 
 	// 解析响应
 	var msgResp MessageResponse
 	if err := json.Unmarshal(body, &msgResp); err != nil {
-		return "", fmt.Errorf("解析响应失败: %w", err)
+		return "", "", fmt.Errorf("解析响应失败: %w", err)
 	}
 
 	// 查找用户消息（user_type == 1）
 	messages := msgResp.DownlinkBody.PullSingleChainDownlinkBody.Messages
 	for _, msg := range messages {
 		if msg.UserType == 1 {
-			if msg.MessageID != lastMessageID {
-				lastMessageID = msg.MessageID
-				return msg.TTSContent, nil
-			}
-			break
+			return msg.MessageID, msg.TTSContent, nil
 		}
 	}
 
-	return "", nil
+	return "", "", nil
 }
