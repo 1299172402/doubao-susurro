@@ -10,6 +10,9 @@ import (
 //go:embed static/index.html
 var staticFS []byte
 
+//go:embed static/logo.png
+var logoPNG []byte
+
 // StartWeb 启动 Web 服务
 func StartWeb(addr string) {
 	app := fiber.New()
@@ -18,6 +21,12 @@ func StartWeb(addr string) {
 	app.Get("/", func(c fiber.Ctx) error {
 		c.Set("Content-Type", "text/html; charset=utf-8")
 		return c.Send(staticFS)
+	})
+
+	// Logo
+	app.Get("/logo.png", func(c fiber.Ctx) error {
+		c.Set("Content-Type", "image/png")
+		return c.Send(logoPNG)
 	})
 
 	// 版本号
