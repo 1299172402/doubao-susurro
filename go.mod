@@ -1,4 +1,4 @@
-module doubao-input
+module github.com/1299172402/doubao-input/cmd
 
 go 1.25.0
 
