@@ -9,6 +9,15 @@
 所以我做了这个工具，希望也能帮助到有类似需求的朋友们。
 
 
+## 功能特性
+
+- 🎤 **语音转文字** — 利用豆包强大的语音识别，手机说话、电脑粘贴
+- 🖥️ **系统托盘** — 最小化到托盘，不占用任务栏
+- 🌐 **Web 设置界面** — 通过浏览器可视化配置 session
+- 📋 **自动复制** — 新消息自动复制到剪贴板，直接 Ctrl+V 粘贴
+- 🔄 **自动轮询** — 每秒检查新消息，实时同步
+
+
 ## 下载
 
 前往 [Releases](https://github.com/1299172402/Doubao-input/releases) 页面下载对应平台的可执行文件。
@@ -21,19 +30,22 @@
 
 ## Quick Start
 
-### 1. 获取 session
+### (首次使用)1. 获取 session
 
 1. 打开 [豆包网页版](https://www.doubao.com)，登录并进入一个对话
 2. 按 `F12` 打开开发者工具 → **Network** / **网络** 标签
-3. 在对话中发送一条消息，找到 `im/chain/single` 请求
+3. 在对话中发送一条消息，找到 `single` (`https://www.doubao.com/im/chain/single`) 请求
 4. 右键该请求 → **Copy** / **复制** → **Copy as cURL (Bash)** / **复制为 cURL (Bash)**
-5. 在 `doubao-input.exe` 的相同目录下创建 `session.txt` 文件，将复制的内容粘贴到该文件中
+5. 右键系统托盘图标 → 点击「设置」
+6. 在打开的浏览器页面中，按照提示粘贴从豆包复制的 cURL 内容
+7. 点击保存，开始使用
 
-### 2. 双击运行同目录下的 `doubao-input.exe`
+### 2. 双击运行 `doubao-input.exe`
 
 ### 3. 在手机上对着豆包的同一个对话说话
 
 ### 4. Ctrl+V 粘贴到任何输入框中，享受语音输入的便利！
+
 
 ## For Developers
 
@@ -41,51 +53,100 @@
 
 ```bash
 go mod tidy
-go build -o doubao-input.exe .
+go build -o doubao-input.exe ./cmd
 ./doubao-input.exe
 ```
 
-### 或者直接运行：
+### 运行
 
 ```bash
-go run .
+go run ./cmd
 ```
 
-收到新消息时会自动：
-- 在命令行打印消息内容和时间
-- 将消息文本复制到剪贴板（`Ctrl+V` 粘贴）
+### 环境变量
 
-按 `Ctrl+C` 停止。
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `DOUBAO_INPUT_PORT` | Web 服务端口 | `2828` |
+
+## 系统托盘
+
+系统托盘提供以下操作：
+- **设置** — 打开 Web 配置界面
+- **关闭设置** — 停止 Web 服务
+- **退出** — 退出程序
 
 
 ## 项目结构
 
 ```
-├── main.go          # 主程序入口，轮询消息并复制到剪贴板
-├── listener.go      # 消息监听逻辑，调用接口获取最新用户消息
-├── curl_parser.go   # curl 解析工具，从 session.txt 提取请求配置
-├── session.txt      # 存放从浏览器复制的 curl 命令
-└── go.mod           # Go 模块定义
+├── cmd/
+│   ├── main.go           # 主程序入口
+│   ├── tray.go           # 系统托盘管理
+│   ├── web.go            # Web 服务（Fiber 框架）
+│   ├── clipboard.go      # 剪贴板写入与消息轮询
+│   ├── listener.go       # 消息监听逻辑，调用豆包接口
+│   ├── curl_parser.go    # cURL 解析工具
+│   ├── tool.go           # 工具函数（PNG 转 ICO）
+│   └── static/
+│       ├── index.html    # Web 设置界面
+│       └── logo.png      # 应用图标
+├── session.txt           # 存放从浏览器复制的 cURL 命令
+├── go.mod                # Go 模块定义
+└── README.md
 ```
 
 ## 各模块说明
 
-### `session.txt`
+### `cmd/main.go`
 
-存放从浏览器 DevTools 复制的原始 curl 命令。
+主程序入口，启动消息监听（后台）和系统托盘（阻塞主线程）。
 
-### `curl_parser.go`
+### `cmd/tray.go`
 
-- `ReadCurlFile(path)` — 读取 curl 文件内容
-- `ParseCurl(curlStr)` — 解析 curl，提取 URL、请求参数、请求头、Cookie、请求体
-- `GetConfig(filePath)` — 组装最终请求配置，修正 `direction=0`（向新消息方向拉取）
+系统托盘管理，使用 `fyne.io/systray` 实现托盘图标和菜单：
+- 设置 / 关闭设置（Web 服务）
+- 退出程序
 
-### `listener.go`
+### `cmd/web.go`
 
-- `PollNewMessage(config)` — 轮询一次接口，有新用户消息返回文本，无则返回空字符串
+Web 服务，基于 `gofiber/fiber/v3`，提供以下 API：
 
-### `main.go`
+| 路由 | 方法 | 说明 |
+|------|------|------|
+| `/` | GET | Web 设置界面 |
+| `/logo.png` | GET | 应用图标 |
+| `/api/version` | GET | 获取版本号 |
+| `/api/session` | GET | 获取当前 session |
+| `/api/session/save` | POST | 保存 session |
+| `/api/poll` | GET | 手动获取最新消息 |
 
-主循环，每秒轮询一次，有新消息时打印并复制到剪贴板。
+### `cmd/clipboard.go`
+
+消息轮询主循环，每秒检查一次新消息，有新消息时自动复制到剪贴板。
+
+### `cmd/listener.go`
+
+- `GetLatestMessage(config)` — 调用豆包接口获取最新一条用户消息
+
+### `cmd/curl_parser.go`
+
+- `ReadCurlFile(path)` — 读取 cURL 文件内容
+- `ParseCurl(curlStr)` — 解析 cURL，提取 URL、请求参数、请求头、Cookie、请求体
+- `GetConfig(filePath)` — 组装最终请求配置
+- `SaveCurlFile(path, content)` — 保存 cURL 文件
+
+### `cmd/tool.go`
+
+- `pngToICO(pngData)` — 将 PNG 转换为 ICO 格式（用于系统托盘图标）
+
+
+## 依赖
+
+| 包名 | 用途 |
+|------|------|
+| `fyne.io/systray` | 系统托盘 |
+| `github.com/atotto/clipboard` | 剪贴板操作 |
+| `github.com/gofiber/fiber/v3` | Web 框架 |
 
 
