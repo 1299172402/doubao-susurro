@@ -6,6 +6,7 @@ require (
 	fyne.io/systray v1.12.1
 	github.com/atotto/clipboard v0.1.4
 	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/kardianos/service v1.2.4
 )
 
 require (

@@ -30,6 +30,8 @@ func onReady() {
 	mOpen := systray.AddMenuItem("打开设置页面", "打开浏览器进行配置")
 	mClose := systray.AddMenuItem("关闭设置页面", "关闭配置页面并停止 Web 服务")
 	systray.AddSeparator()
+	mAutostart := systray.AddMenuItemCheckbox("开机自启", "以 Windows 服务方式开机自启", isServiceInstalled())
+	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("退出", "退出程序")
 
 	go func() {
@@ -47,6 +49,15 @@ func onReady() {
 			case <-mClose.ClickedCh:
 				// 关闭 Web 服务
 				StopWeb()
+			case <-mAutostart.ClickedCh:
+				enable := isServiceInstalled()
+				if enable {
+					uninstallService()
+					mAutostart.Uncheck()
+				} else {
+					installService()
+					mAutostart.Check()
+				}
 			case <-mQuit.ClickedCh:
 				systray.Quit()
 				return
