@@ -9,6 +9,16 @@
 所以我做了这个工具，希望也能帮助到有类似需求的朋友们。
 
 
+## 下载
+
+前往 [Releases](https://github.com/1299172402/Doubao-input/releases) 页面下载对应平台的可执行文件。
+
+支持的平台：
+- Windows (amd64)
+- Linux (amd64)
+- macOS (amd64 / arm64)
+
+
 ## Quick Start
 
 ### 1. 获取 session
@@ -17,7 +27,7 @@
 2. 按 `F12` 打开开发者工具 → **Network** / **网络** 标签
 3. 在对话中发送一条消息，找到 `im/chain/single` 请求
 4. 右键该请求 → **Copy** / **复制** → **Copy as cURL (Bash)** / **复制为 cURL (Bash)**
-5. 将复制的内容粘贴到 `session.txt` 文件中
+5. 在 `doubao-input.exe` 的相同目录下创建 `session.txt` 文件，将复制的内容粘贴到该文件中
 
 ### 2. 双击运行同目录下的 `doubao-input.exe`
 
@@ -74,3 +84,5 @@ go run .
 ### `main.go`
 
 主循环，每秒轮询一次，有新消息时打印并复制到剪贴板。
+
+
