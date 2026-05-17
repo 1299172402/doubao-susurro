@@ -1,6 +1,5 @@
 """豆包获取最新一次发送的消息"""
 
-import uuid
 import requests
 
 from config import URL, PARAMS, HEADERS, COOKIES, PAYLOAD
@@ -13,7 +12,6 @@ def poll_new_message():
     global _last_message_id
 
     payload = PAYLOAD.copy()
-    payload["sequence_id"] = str(uuid.uuid4())
 
     response = requests.post(URL, params=PARAMS, headers=HEADERS, cookies=COOKIES, json=payload)
 
