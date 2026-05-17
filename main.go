@@ -7,6 +7,10 @@ import (
 	"github.com/atotto/clipboard"
 )
 
+// 通过 ldflags 在构建时注入，例如:
+// go build -ldflags="-X main.Version=v1.0.0" -o doubao-input.exe .
+var Version = "dev"
+
 func main() {
 	config, err := GetConfig("session.txt")
 	if err != nil {
@@ -14,6 +18,7 @@ func main() {
 		return
 	}
 
+	fmt.Printf("Doubao Input %s\n", Version)
 	fmt.Println("开始监听豆包消息...")
 	fmt.Println("按 Ctrl+C 停止")
 
