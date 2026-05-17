@@ -270,7 +270,7 @@
 
         // 版本号
         fetch('/api/version').then(r => r.json()).then(d => {
-            document.getElementById('version').textContent = (d.version || 'dev');
+            document.getElementById('version').textContent = '版本：' + (d.version || 'dev');
         });
 
         // 保存 session
