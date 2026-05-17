@@ -17,6 +17,10 @@ var webApp *fiber.App
 
 // StartWeb 启动 Web 服务
 func StartWeb(addr string) {
+	if webApp != nil {
+		return // 已经在运行
+	}
+
 	app := fiber.New()
 	webApp = app
 
