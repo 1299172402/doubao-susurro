@@ -45,6 +45,9 @@ func RunService() {
 	}
 
 	if install || uninstall || start || stop {
+		// 自动提权：非管理员时弹出 UAC 并以管理员身份重新运行
+		ensureAdmin()
+
 		switch {
 		case install:
 			if err := s.Install(); err != nil {
