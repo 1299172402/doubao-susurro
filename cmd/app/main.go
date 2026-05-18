@@ -9,7 +9,6 @@ import (
 	"Doubao-input/internal/core"
 	"Doubao-input/internal/system"
 	"Doubao-input/internal/system/lock"
-	"Doubao-input/internal/tool"
 	"Doubao-input/internal/web"
 )
 
@@ -21,6 +20,7 @@ func main() {
 	unlock, err := lock.TryLock("doubao-input")
 	if err != nil {
 		fmt.Println(err)
+		web.Launch()
 		os.Exit(1)
 	}
 	defer unlock()
@@ -34,14 +34,7 @@ func main() {
 
 	// 非静默模式
 	if !*silent {
-		// 启动 Web 服务
-		addr := ":2828"
-		if p := os.Getenv("DOUBAO_INPUT_PORT"); p != "" {
-			addr = ":" + p
-		}
-		go web.StartWeb(addr)
-		// 自动打开浏览器
-		go tool.OpenBrowser("http://localhost:2828")
+		web.Launch()
 	}
 
 	// 启动系统托盘（阻塞 main）

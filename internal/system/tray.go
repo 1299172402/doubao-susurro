@@ -5,7 +5,6 @@ import (
 	_ "image/png"
 
 	"fmt"
-	"os"
 
 	"Doubao-input/assets"
 	"Doubao-input/internal/tool"
@@ -19,14 +18,7 @@ func StartTray() {
 }
 
 func openSetting() {
-	// 启动 Web 服务
-	addr := ":2828"
-	if p := os.Getenv("DOUBAO_INPUT_PORT"); p != "" {
-		addr = ":" + p
-	}
-	go web.StartWeb(addr)
-	fmt.Printf("Web 界面: http://localhost%s\n", addr)
-	tool.OpenBrowser(fmt.Sprintf("http://localhost%s", addr))
+	web.Launch()
 }
 
 func onReady() {

@@ -2,6 +2,7 @@ package web
 
 import (
 	_ "embed"
+	"fmt"
 	"os"
 
 	"github.com/gofiber/fiber/v3"
@@ -83,4 +84,16 @@ func StopWeb() {
 		webApp.Shutdown()
 		webApp = nil
 	}
+}
+
+func Launch() {
+	// 启动 Web 服务
+	addr := ":2828"
+	if p := os.Getenv("DOUBAO_INPUT_PORT"); p != "" {
+		addr = ":" + p
+	}
+	go StartWeb(addr)
+	// 自动打开浏览器
+	fmt.Printf("Web 界面: http://localhost%s\n", addr)
+	tool.OpenBrowser(fmt.Sprintf("http://localhost%s", addr))
 }
