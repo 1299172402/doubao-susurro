@@ -8,6 +8,7 @@ import (
 	"Doubao-input/info"
 	"Doubao-input/internal/core"
 	"Doubao-input/internal/system"
+	"Doubao-input/internal/system/lock"
 	"Doubao-input/internal/tool"
 	"Doubao-input/internal/web"
 )
@@ -15,6 +16,14 @@ import (
 func main() {
 	silent := flag.Bool("silent", false, "静默模式，不打开浏览器")
 	flag.Parse()
+
+	// 防止重复运行
+	unlock, err := lock.TryLock("doubao-input")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer unlock()
 
 	// 交互式模式（双击启动）
 	fmt.Printf("Doubao Input\n")
