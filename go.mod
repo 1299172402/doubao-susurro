@@ -6,6 +6,7 @@ require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/energye/systray v1.0.3
 	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/kardianos/service v1.2.4
 )
 
 require (
