@@ -13,7 +13,7 @@ on:
       - '*.md'
 
 jobs:
-  build-app:
+  build:
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
@@ -22,7 +22,7 @@ jobs:
           - goos: windows
             goarch: amd64
             suffix: .exe
-            runs-on: ubuntu-latest
+            runs-on: windows-latest
             cgo_enabled: '1'
           - goos: linux
             goarch: amd64
@@ -48,6 +48,27 @@ jobs:
         with:
           go-version: '1.25'
 
+      - name: Install dependencies (only for Linux)
+        if: matrix.runs-on == 'ubuntu-latest'
+        run: |
+          # sudo apt install golang
+          sudo snap install go  --classic
+
+          # gcc
+          sudo apt install gcc libc6-dev
+
+          # x11
+          sudo apt install libx11-dev xorg-dev libxtst-dev
+
+          # Clipboard
+          sudo apt install xsel xclip
+
+          # Bitmap
+          sudo apt install libpng++-dev
+
+          # GoHook
+          sudo apt install xcb libxcb-xkb-dev x11-xkb-utils libx11-xcb-dev libxkbcommon-x11-dev libxkbcommon-dev
+
       - name: Build app
         env:
           GOOS: ${{ matrix.goos }}
@@ -59,18 +80,18 @@ jobs:
           if [ "${{ matrix.goos }}" = "windows" ]; then
             LDFLAGS="${LDFLAGS} -H windowsgui"
           fi
-          go build -tags typing -ldflags="${LDFLAGS}" -o doubao-input-app-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }} ./cmd/app
+          go build -ldflags="${LDFLAGS}" -o doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }} ./cmd/app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: doubao-input-app-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: doubao-input-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
-            doubao-input-app-*-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+            doubao-input-*-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-app]
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
