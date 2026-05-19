@@ -30,7 +30,7 @@ func main() {
 	fmt.Printf("Version: %s\n", info.Version)
 
 	// 启动消息监听（后台运行，不阻塞）
-	go core.StartClipboardWriter()
+	go core.StartPolling()
 
 	// 非静默模式
 	if !*silent {

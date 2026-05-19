@@ -11,5 +11,5 @@ func main() {
 	fmt.Printf("Doubao Input\n")
 	fmt.Printf("Version: %s\n", info.Version)
 
-	core.StartClipboardWriter()
+	core.StartPolling()
 }
