@@ -113,16 +113,16 @@ jobs:
           if [ "${{ matrix.goos }}" = "windows" ]; then
             LDFLAGS="${LDFLAGS} -H windowsgui"
           fi
-          go build -ldflags="${LDFLAGS}" -o "doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}" ./cmd/app
+          go build -ldflags="${LDFLAGS}" -o "doubao-input${{ matrix.suffix }}" ./cmd/app
         shell: bash
 
       # 上传构建产物
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: doubao-input-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
-            doubao-input-*-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+            doubao-input${{ matrix.suffix }}
 
   # 仅在推送 tag 时创建 GitHub Release 并附加所有产物
   release:
@@ -139,6 +139,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: artifacts
+          skip-decompress: true
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
