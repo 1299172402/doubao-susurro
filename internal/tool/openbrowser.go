@@ -2,9 +2,7 @@ package tool
 
 import (
 	"Doubao-input/internal/config"
-	_ "embed"
 	"fmt"
-	_ "image/png"
 	"os/exec"
 	"runtime"
 )

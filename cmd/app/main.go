@@ -16,6 +16,9 @@ func main() {
 	silent := flag.Bool("silent", false, "静默模式，不打开浏览器")
 	flag.Parse()
 
+	// 加载配置
+	config.InitConfig()
+
 	// 确保单实例运行
 	unlock, err := lock.TryLock("doubao-input")
 	if err != nil {
@@ -24,9 +27,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer unlock()
-
-	// 加载配置
-	config.InitConfig()
 
 	// 启动消息监听（后台运行，不阻塞）
 	go core.StartPolling()
