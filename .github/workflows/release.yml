@@ -120,7 +120,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: doubao-input-${{ github.ref_name || 'dev' }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
             doubao-input${{ matrix.suffix }}
 
