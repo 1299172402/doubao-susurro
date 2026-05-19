@@ -27,10 +27,15 @@ go run ./cmd/app
 │   │   └── polling.go                # 消息轮询主循环，自动复制到剪贴板
 │   ├── system/
 │   │   ├── tray.go                   # 系统托盘菜单管理
-│   │   └── lock/
-│   │       ├── lock.go               # 进程锁接口（跨平台）
-│   │       ├── lock_windows.go       # Windows 文件锁实现（LockFileEx）
-│   │       └── lock_unix.go          # Unix 占位实现
+│   │   ├── lock/
+│   │   │   ├── lock.go               # 进程锁接口（跨平台）
+│   │   │   ├── lock_windows.go       # Windows 文件锁实现（LockFileEx）
+│   │   │   └── lock_unix.go          # Unix 文件锁实现（flock）
+│   │   └── startup/
+│   │       ├── startup.go            # 开机自启接口（跨平台）
+│   │       ├── windows.go            # Windows 开机自启（VBS 脚本）
+│   │       ├── linux.go              # Linux 开机自启（.desktop 文件）
+│   │       └── macos.go              # macOS 开机自启（LaunchAgent plist）
 │   ├── tool/
 │   │   ├── openbrowser.go            # 跨平台打开默认浏览器
 │   │   └── pngtoico.go               # PNG 转 ICO 格式
@@ -40,7 +45,11 @@ go run ./cmd/app
 │   ├── asset.go                      # go:embed 资源声明
 │   └── static/
 │       ├── index.html                # Web 设置界面
-│       └── logo.png                  # 应用图标
+│       ├── logo.png                  # 应用图标
+│       └── startup/
+│           ├── windows.vbs           # Windows 开机自启脚本模板
+│           ├── linux.desktop         # Linux 开机自启桌面文件模板
+│           └── macos.plist           # macOS LaunchAgent 配置模板
 ├── info/
 │   └── version.go                    # 版本号定义（构建时注入）
 ├── doubao-input-config.yml           # 运行时生成的配置文件
@@ -67,9 +76,12 @@ go run ./cmd/app
 
 ```go
 type Config struct {
-    Port     string `mapstructure:"port"`      // Web 服务端口，默认 "2828"
-    AutoType bool   `mapstructure:"auto_type"` // 自动输入模式，默认 false
-    Session  string `mapstructure:"session"`   // 从豆包复制的 cURL 命令
+    Port              string `mapstructure:"port"`               // Web 服务端口，默认 "2828"
+    AutoType          bool   `mapstructure:"auto_type"`          // 自动输入模式，默认 true
+    Startup           bool   `mapstructure:"startup"`            // 开机自启，默认 false
+    Session           string `mapstructure:"session"`            // 从豆包复制的 cURL 命令
+    ConversationLimit int    `mapstructure:"conversation_limit"` // 单次获取对话数量，默认 5
+    IntervalTime      int    `mapstructure:"interval_time"`      // 轮询间隔（毫秒），默认 1000
 }
 ```
 
@@ -92,11 +104,81 @@ type Config struct {
 
 ### `internal/core/polling.go`
 
-消息轮询主循环，每秒执行一次。
+消息轮询主循环，根据 `interval_time` 配置定时执行。
 
 - 检测到新消息时自动写入系统剪贴板（`atotto/clipboard`）
 - 如果 `auto_type` 为 `true`，通过 `robotgo` 自动将文本键入当前焦点窗口
 - 通过 `lastMessageID` 去重，避免重复处理
+
+### `internal/system/tray.go`
+
+系统托盘菜单管理，使用 [energye/systray](https://github.com/energye/systray)。
+
+- 托盘菜单项：自动输入（开关）、开机自启（开关）、设置（打开浏览器）、退出
+- 托盘图标从嵌入的 PNG 资源实时转换为 ICO 格式
+
+### `internal/system/startup/`
+
+跨平台开机自启实现：
+
+- **Windows**：在 `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup` 创建 VBS 脚本
+- **Linux**：在 `~/.config/autostart/` 创建 `.desktop` 文件
+- **macOS**：在 `~/Library/LaunchAgents/` 创建 `.plist` 文件
+
+### `internal/system/lock/`
+
+单实例进程锁，防止程序重复启动：
+
+- **Windows**：使用 `LockFileEx` API
+- **Unix**：使用 `flock` 系统调用
+
+### `internal/web/web.go`
+
+基于 [Fiber v3](https://gofiber.io/) 的 Web 服务，仅监听 `127.0.0.1`。
+
+API 端点：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/` | 设置页面（HTML） |
+| GET | `/logo.png` | 应用图标 |
+| GET | `/api/version` | 获取版本号 |
+| GET | `/api/session` | 获取当前 session |
+| POST | `/api/session/save` | 保存 session |
+| GET | `/api/config` | 获取所有配置 |
+| POST | `/api/config/save` | 保存配置 |
+| GET | `/api/poll` | 手动获取最新消息 |
+
+### `assets/asset.go`
+
+使用 `go:embed` 嵌入静态资源：
+
+- `IndexPage` — Web 设置页面 HTML
+- `LogoPNG` — 应用图标 PNG
+- `StartupWindowsVBS` — Windows 开机自启 VBS 脚本模板
+- `StartupMacOSPlist` — macOS LaunchAgent plist 模板
+- `StartupLinuxDesktop` — Linux .desktop 文件模板
+
+### `info/version.go`
+
+版本号定义，通过 `ldflags` 在构建时注入：
+
+```bash
+go build -ldflags="-X Doubao-input/info.Version=v1.0.0" ./cmd/app
+```
+
+未注入时默认值为 `"dev"`。
+
+## 依赖说明
+
+| 依赖 | 用途 |
+|------|------|
+| `github.com/atotto/clipboard` | 系统剪贴板读写 |
+| `github.com/energye/systray` | 跨平台系统托盘 |
+| `github.com/go-vgo/robotgo` | 模拟键盘输入（自动输入功能） |
+| `github.com/gofiber/fiber/v3` | Web 框架 |
+| `github.com/mitchellh/mapstructure` | 结构体映射 |
+| `github.com/spf13/viper` | 配置管理 |
 
 ### `internal/system/tray.go`
 
