@@ -8,6 +8,7 @@ import (
 
 	"Doubao-input/assets"
 	"Doubao-input/internal/config"
+	"Doubao-input/internal/system/startup"
 	"Doubao-input/internal/tool"
 
 	"github.com/energye/systray"
@@ -22,6 +23,7 @@ func openSetting() {
 }
 
 var mAutoType *systray.MenuItem
+var mStartup *systray.MenuItem
 
 func taggleAutoType() {
 	cfg := config.GetConfig()
@@ -31,6 +33,34 @@ func taggleAutoType() {
 		mAutoType.Check()
 	} else {
 		mAutoType.Uncheck()
+	}
+}
+
+func taggleStartup() {
+	cfg := config.GetConfig()
+	newStartupState := !cfg.Startup
+
+	if newStartupState {
+		if err := startup.InstallStartup(); err != nil {
+			fmt.Println("安装开机自启失败:", err)
+			return
+		}
+	} else {
+		if err := startup.UninstallStartup(); err != nil {
+			fmt.Println("卸载开机自启失败:", err)
+			return
+		}
+	}
+
+	// 只有操作成功后才更新配置和UI
+	cfg.Startup = newStartupState
+	config.SaveConfig(cfg)
+
+	// 更新UI状态
+	if newStartupState {
+		mStartup.Check()
+	} else {
+		mStartup.Uncheck()
 	}
 }
 
@@ -46,6 +76,8 @@ func onReady() {
 
 	mAutoType = systray.AddMenuItemCheckbox("自动输入", "启用自动输入功能", config.GetConfig().AutoType)
 	mAutoType.Click(taggleAutoType)
+	mStartup = systray.AddMenuItemCheckbox("开机自启", "启用开机自启功能", config.GetConfig().Startup)
+	mStartup.Click(taggleStartup)
 	mOpen := systray.AddMenuItem("设置", "打开设置页面")
 	mOpen.Click(openSetting)
 	systray.AddSeparator()

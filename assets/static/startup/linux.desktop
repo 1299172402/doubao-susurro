@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Doubao-input
+Exec=%s
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true

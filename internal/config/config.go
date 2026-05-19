@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
@@ -13,17 +15,19 @@ var globalConfig *Config
 type Config struct {
 	Port     string `mapstructure:"port"`
 	AutoType bool   `mapstructure:"auto_type"`
+	Startup  bool   `mapstructure:"startup"`
 	Session  string `mapstructure:"session"`
 }
 
 func setDefaults() {
 	viper.SetDefault("port", "2828")    // 默认端口
 	viper.SetDefault("auto_type", true) // 默认启用自动输入
+	viper.SetDefault("startup", false)  // 默认不开机自启
 	viper.SetDefault("session", "")     // 默认 session 为空
 }
 
 func LoadConfig(path string) (*Config, error) {
-	viper.SetConfigFile(path) // 如 "config.yml"
+	viper.SetConfigFile(path)
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()               // 允许环境变量覆盖
 	viper.SetEnvPrefix("DOUBAO_INPUT") // 环境变量前缀
@@ -46,7 +50,17 @@ func LoadConfig(path string) (*Config, error) {
 }
 
 func InitConfig() {
-	cfg, err := LoadConfig("./doubao-input-config.yml")
+	// 获取可执行文件所在目录
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("获取执行文件路径失败: ", err)
+	}
+	exeDir := filepath.Dir(exePath)
+
+	// 配置文件路径
+	configPath := filepath.Join(exeDir, "doubao-input-config.yml")
+
+	cfg, err := LoadConfig(configPath)
 	if err != nil {
 		log.Fatal("加载配置失败: ", err)
 	}
