@@ -53,16 +53,45 @@ func LoadConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-func InitConfig() {
-	// 获取可执行文件所在目录
+func SelectConfigPath() string {
+	// 先看可执行文件所在目录有没有配置文件
 	exePath, err := os.Executable()
 	if err != nil {
 		log.Fatal("获取执行文件路径失败: ", err)
 	}
 	exeDir := filepath.Dir(exePath)
-
-	// 配置文件路径
 	configPath := filepath.Join(exeDir, "doubao-input-config.yml")
+	stat, err := os.Stat(configPath)
+	if stat != nil && !os.IsNotExist(err) {
+		return configPath
+	}
+
+	// 没有的话看当前工作目录有没有配置文件
+	workDir, err := os.Getwd()
+	if err != nil {
+		log.Fatal("获取工作目录失败: ", err)
+	}
+	configPath = filepath.Join(workDir, "doubao-input-config.yml")
+	stat, err = os.Stat(configPath)
+	if stat != nil && !os.IsNotExist(err) {
+		return configPath
+	}
+
+	// 如果还是没有，返回可执行文件目录作为默认路径
+	exePath, err = os.Executable()
+	if err != nil {
+		log.Fatal("获取执行文件路径失败: ", err)
+	}
+	exeDir = filepath.Dir(exePath)
+	// 配置文件路径
+	configPath = filepath.Join(exeDir, "doubao-input-config.yml")
+
+	return configPath
+}
+
+func InitConfig() {
+	// 配置文件路径
+	configPath := SelectConfigPath()
 
 	cfg, err := LoadConfig(configPath)
 	if err != nil {
