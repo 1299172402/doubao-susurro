@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"Doubao-input/internal/config"
+	global_config "Doubao-input/internal/config"
 )
 
 // curlConfig 解析后的 curl 配置
@@ -92,7 +92,7 @@ func parseCurl(curlStr string) (*curlConfig, error) {
 
 // getConfig 从 config 中解析配置
 func getConfig() (*curlConfig, error) {
-	curlStr := config.GetConfig().Session
+	curlStr := global_config.GetConfig().Session
 
 	config, err := parseCurl(curlStr)
 	if err != nil {
@@ -104,6 +104,7 @@ func getConfig() (*curlConfig, error) {
 		if body, ok := uplink["pull_singe_chain_uplink_body"].(map[string]interface{}); ok {
 			body["direction"] = 0
 			body["anchor_index"] = 0
+			body["limit"] = global_config.GetConfig().ConversationLimit
 		}
 	}
 

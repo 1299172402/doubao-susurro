@@ -17,7 +17,7 @@ func StartPolling() {
 		msgID, msg, err := GetLatestMessage()
 		if err != nil {
 			fmt.Println("轮询错误:", err)
-			time.Sleep(1 * time.Second)
+			time.Sleep(time.Duration(config.GetConfig().IntervalTime) * time.Millisecond)
 			continue
 		}
 
@@ -36,6 +36,6 @@ func StartPolling() {
 			}
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Duration(config.GetConfig().IntervalTime) * time.Millisecond)
 	}
 }

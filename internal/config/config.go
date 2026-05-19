@@ -13,17 +13,21 @@ import (
 var globalConfig *Config
 
 type Config struct {
-	Port     string `mapstructure:"port"`
-	AutoType bool   `mapstructure:"auto_type"`
-	Startup  bool   `mapstructure:"startup"`
-	Session  string `mapstructure:"session"`
+	Port              string `mapstructure:"port"`
+	AutoType          bool   `mapstructure:"auto_type"`
+	Startup           bool   `mapstructure:"startup"`
+	Session           string `mapstructure:"session"`
+	ConversationLimit int    `mapstructure:"conversation_limit"`
+	IntervalTime      int    `mapstructure:"interval_time"`
 }
 
 func setDefaults() {
-	viper.SetDefault("port", "2828")    // 默认端口
-	viper.SetDefault("auto_type", true) // 默认启用自动输入
-	viper.SetDefault("startup", false)  // 默认不开机自启
-	viper.SetDefault("session", "")     // 默认 session 为空
+	viper.SetDefault("port", "2828")          // 默认端口
+	viper.SetDefault("auto_type", true)       // 默认启用自动输入
+	viper.SetDefault("startup", false)        // 默认不开机自启
+	viper.SetDefault("session", "")           // 默认 session 为空
+	viper.SetDefault("conversation_limit", 5) // 单次获取对话数量
+	viper.SetDefault("interval_time", 1000)   // 默认请求间隔时间（毫秒）
 }
 
 func LoadConfig(path string) (*Config, error) {
