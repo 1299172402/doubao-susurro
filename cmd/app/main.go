@@ -8,6 +8,8 @@ import (
 	"Doubao-input/internal/tool"
 	"Doubao-input/internal/web"
 	"flag"
+	"fmt"
+	"os"
 )
 
 func main() {
@@ -15,7 +17,13 @@ func main() {
 	flag.Parse()
 
 	// 确保单实例运行
-	lock.OnlyOneInstance()
+	unlock, err := lock.TryLock("doubao-input")
+	if err != nil {
+		fmt.Println(err)
+		tool.OpenBrowser()
+		os.Exit(1)
+	}
+	defer unlock()
 
 	// 加载配置
 	config.InitConfig()

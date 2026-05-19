@@ -1,7 +1,6 @@
 package lock
 
 import (
-	"Doubao-input/internal/tool"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,15 +35,4 @@ func TryLock(name string) (unlock func(), err error) {
 	}
 
 	return unlock, nil
-}
-
-func OnlyOneInstance() {
-	// 防止重复运行
-	unlock, err := TryLock("doubao-input")
-	if err != nil {
-		fmt.Println(err)
-		tool.OpenBrowser()
-		os.Exit(1)
-	}
-	defer unlock()
 }
