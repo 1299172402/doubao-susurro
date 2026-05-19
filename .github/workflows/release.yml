@@ -19,26 +19,46 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Windows amd64 (cross-compile from Ubuntu)
           - goos: windows
             goarch: amd64
             suffix: .exe
-            runs-on: windows-latest
+            runs-on: ubuntu-latest
             cgo_enabled: '1'
+            cc: x86_64-w64-mingw32-gcc
+            cxx: x86_64-w64-mingw32-g++
+          # Windows 386 (cross-compile from Ubuntu)
+          - goos: windows
+            goarch: '386'
+            suffix: .exe
+            runs-on: ubuntu-latest
+            cgo_enabled: '1'
+            cc: i686-w64-mingw32-gcc
+            cxx: i686-w64-mingw32-g++
+          # Linux amd64 (native)
           - goos: linux
             goarch: amd64
             suffix: ''
             runs-on: ubuntu-latest
             cgo_enabled: '1'
+            cc: gcc
+            cxx: g++
+          # macOS amd64 (native)
           - goos: darwin
             goarch: amd64
             suffix: ''
             runs-on: macos-latest
             cgo_enabled: '1'
+            cc: gcc
+            cxx: g++
+          # macOS arm64 (native, for Apple Silicon)
           - goos: darwin
             goarch: arm64
             suffix: ''
             runs-on: macos-latest
             cgo_enabled: '1'
+            cc: gcc
+            cxx: g++
 
     steps:
       - uses: actions/checkout@v6
@@ -48,8 +68,9 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Install dependencies (only for Linux)
-        if: matrix.runs-on == 'ubuntu-latest'
+      # 为 Linux 构建安装原生依赖
+      - name: Install dependencies (Linux native)
+        if: matrix.goos == 'linux'
         run: |
           # sudo apt install golang
           sudo snap install go  --classic
@@ -69,20 +90,33 @@ jobs:
           # GoHook
           sudo apt install xcb libxcb-xkb-dev x11-xkb-utils libx11-xcb-dev libxkbcommon-x11-dev libxkbcommon-dev
 
+      # 为 Windows 交叉编译安装 MinGW-w64 及必要库
+      - name: Install dependencies (Windows cross-compile)
+        if: matrix.goos == 'windows'
+        run: |
+          sudo apt install gcc-multilib
+          sudo apt install gcc-mingw-w64
+          # fix err: zlib.h: No such file or directory, Just used by bitmap.
+          sudo apt install libz-mingw-w64-dev
+
+      # 构建二进制
       - name: Build app
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: ${{ matrix.cgo_enabled }}
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
         run: |
           VERSION=${GITHUB_REF_NAME:-dev}
           LDFLAGS="-s -w -X Doubao-input/info.Version=${VERSION}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             LDFLAGS="${LDFLAGS} -H windowsgui"
           fi
-          go build -ldflags="${LDFLAGS}" -o doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }} ./cmd/app
+          go build -ldflags="${LDFLAGS}" -o "doubao-input-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}" ./cmd/app
         shell: bash
 
+      # 上传构建产物
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
@@ -90,13 +124,14 @@ jobs:
           path: |
             doubao-input-*-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
 
+  # 仅在推送 tag 时创建 GitHub Release 并附加所有产物
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      
+
     steps:
       - uses: actions/checkout@v6
 
