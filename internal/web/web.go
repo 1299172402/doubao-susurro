@@ -49,6 +49,51 @@ func StartWeb() {
 		return c.JSON(fiber.Map{"content": string(data)})
 	})
 
+	// 获取所有配置
+	app.Get("/api/config", func(c fiber.Ctx) error {
+		cfg := config.GetConfig()
+		return c.JSON(fiber.Map{
+			"ok":                 true,
+			"auto_type":          cfg.AutoType,
+			"conversation_limit": cfg.ConversationLimit,
+			"interval_time":      cfg.IntervalTime,
+			"startup":            cfg.Startup,
+			"port":               cfg.Port,
+		})
+	})
+
+	// 保存配置
+	app.Post("/api/config/save", func(c fiber.Ctx) error {
+		var req struct {
+			AutoType          *bool `json:"auto_type"`
+			ConversationLimit *int  `json:"conversation_limit"`
+			IntervalTime      *int  `json:"interval_time"`
+			Startup           *bool `json:"startup"`
+		}
+		if err := c.Bind().JSON(&req); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Bad request"})
+		}
+
+		cfg := config.GetConfig()
+		if req.AutoType != nil {
+			cfg.AutoType = *req.AutoType
+		}
+		if req.ConversationLimit != nil {
+			cfg.ConversationLimit = *req.ConversationLimit
+		}
+		if req.IntervalTime != nil {
+			cfg.IntervalTime = *req.IntervalTime
+		}
+		if req.Startup != nil {
+			cfg.Startup = *req.Startup
+		}
+
+		if err := config.SaveConfig(cfg); err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Save failed"})
+		}
+		return c.JSON(fiber.Map{"ok": true})
+	})
+
 	// 保存 session
 	app.Post("/api/session/save", func(c fiber.Ctx) error {
 		var req struct {
@@ -60,7 +105,6 @@ func StartWeb() {
 
 		cfg := config.GetConfig()
 		cfg.Session = req.Content
-		config.SaveConfig(cfg)
 		if err := config.SaveConfig(cfg); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Save failed"})
 		}

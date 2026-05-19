@@ -302,6 +302,105 @@
             color: #4a90d9;
             text-decoration: underline;
         }
+
+        .settings-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: left;
+        }
+
+        .settings-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .setting-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #ccc;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: #4a90d9;
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(20px);
+        }
+
+        .setting-input {
+            width: 100px;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            background: #fafafa;
+            color: #333;
+            transition: border-color 0.2s;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
     </style>
 </head>
 
@@ -322,6 +421,53 @@
         <button class="btn btn-start" id="startBtn" onclick="startPolling()">🚀 获取消息</button>
 
         <div id="result"></div>
+
+        <div class="settings-section">
+            <div class="settings-title">⚙️ 高级设置</div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">自动输入</div>
+                    <div class="setting-desc">获取消息后自动粘贴到输入框</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" id="settingAutoType">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">开机自启</div>
+                    <div class="setting-desc">系统启动时自动运行</div>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" id="settingStartup">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">获取数量</div>
+                    <div class="setting-desc">单次获取对话消息数</div>
+                </div>
+                <input type="number" class="setting-input" id="settingConvLimit" min="1" max="100" value="5">
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">请求间隔 (ms)</div>
+                    <div class="setting-desc">自动轮询的时间间隔</div>
+                </div>
+                <input type="number" class="setting-input" id="settingInterval" min="100" max="60000" step="100"
+                    value="1000">
+            </div>
+
+            <button class="btn btn-save" onclick="saveSettings()" style="margin-top: 12px;">💾 保存设置</button>
+        </div>
+    </div>
+
     </div>
 
     <div class="guide-wrapper">
@@ -395,6 +541,33 @@
         fetch('/api/version').then(r => r.json()).then(d => {
             document.getElementById('version').textContent = '版本：' + (d.version || 'dev');
         });
+
+        // 加载设置
+        fetch('/api/config').then(r => r.json()).then(d => {
+            if (d.ok) {
+                document.getElementById('settingAutoType').checked = d.auto_type;
+                document.getElementById('settingStartup').checked = d.startup;
+                document.getElementById('settingConvLimit').value = d.conversation_limit;
+                document.getElementById('settingInterval').value = d.interval_time;
+            }
+        });
+
+        // 保存设置
+        async function saveSettings() {
+            const payload = {
+                auto_type: document.getElementById('settingAutoType').checked,
+                startup: document.getElementById('settingStartup').checked,
+                conversation_limit: parseInt(document.getElementById('settingConvLimit').value) || 5,
+                interval_time: parseInt(document.getElementById('settingInterval').value) || 1000,
+            };
+            const res = await fetch('/api/config/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showResult(data.ok ? '✅ 设置已保存' : '❌ 保存失败', data.ok ? 'ok' : 'err');
+        }
 
         // 定时更新相对时间
         setInterval(() => {
