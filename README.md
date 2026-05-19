@@ -33,6 +33,7 @@
 - 后台托盘运行，静默不打扰
 - 网页可视化配置，不用改配置文件
 - 低延迟实时消息轮询
+- 支持自动开机启动（Windows / Linux / macOS）
 
 
 ## 📥 立即下载
@@ -60,24 +61,6 @@
     *   现在，在你的手机上，对着豆包的**同一个对话**说话或手写。
     *   回到电脑，打开记事本或任何输入框，按下 <kbd>Ctrl</kbd>+<kbd>V</kbd> 即可看到刚才输入的文字！如果开启了“自动输入”，则连粘贴这一步都省了。
 
-
-### 💡 Windows 开机自启
-如果想让工具在电脑启动时自动运行，可以创建一个 VB 脚本以静默模式启动：
-
-1.  在工具目录下新建一个 `doubao-input-start.vbs` 文件，内容如下：
-    ```vbs
-    Dim ws
-    Set ws = Wscript.CreateObject("Wscript.Shell")
-    ws.run "doubao-input-app.exe -silent", vbhide
-    Wscript.quit
-    ```
-
-2.  为这个 `.vbs` 文件创建快捷方式，然后把它放到系统的启动文件夹里：
-    ```
-    %APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
-    ```
-
-现在，每次开机它都会安静地在后台运行，随时待命。
 
 ---
 
