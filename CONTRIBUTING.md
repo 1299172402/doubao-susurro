@@ -151,3 +151,9 @@ type Config struct {
 | `github.com/spf13/viper` | 配置管理（YAML + 环境变量） |
 | `github.com/mitchellh/mapstructure` | 结构体与 map 转换 |
 
+
+## 已放弃的开发（如果有人想尝试也OK）
+
+- 原始的 fyne 库实现：虽然现在 `github.com/fyne-io/systray` （或者其他从 `github.com/getlantern/systray` 衍生出的托盘界面）也能用，但是不支持高 DPI ，界面会很模糊，所以一直想用原始的 github.com/fyne-io/fyne 库实现，但是甚至没法运行他的 demo 。
+- 注册为服务：尝试过 `github.com/kardianos/service` 库来注册为系统服务，结果可以 install / uninstall 但是无法启动。
+- 在配置文件中添加 `conversation_id` 字段，允许用户指定会话 ID 以获取特定对话的消息：其实直接观察一下配置文件就知道 conversation_id 在 curl 的哪里，直接修改就行
