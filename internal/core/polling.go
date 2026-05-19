@@ -14,7 +14,7 @@ var lastMessageID string
 
 func StartPolling() {
 	for {
-		msgID, msg, err := DeliverMessage()
+		msgID, msg, err := GetLatestMessage()
 		if err != nil {
 			fmt.Println("轮询错误:", err)
 			time.Sleep(1 * time.Second)

@@ -7,6 +7,8 @@ require (
 	github.com/energye/systray v1.0.3
 	github.com/go-vgo/robotgo v1.0.2
 	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/mitchellh/mapstructure v1.5.0
+	github.com/spf13/viper v1.21.0
 )
 
 require (
@@ -37,7 +39,6 @@ require (
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/spf13/viper v1.21.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tailscale/win v0.0.0-20250627215312-f4da2b8ee071 // indirect
 	github.com/tinylib/msgp v1.6.4 // indirect

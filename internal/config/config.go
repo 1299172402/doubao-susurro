@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
@@ -12,11 +13,13 @@ var globalConfig *Config
 type Config struct {
 	Port     string `mapstructure:"port"`
 	AutoType bool   `mapstructure:"auto_type"`
+	Session  string `mapstructure:"session"`
 }
 
 func setDefaults() {
 	viper.SetDefault("port", "2828")     // 默认端口
 	viper.SetDefault("auto_type", false) // 默认不启用自动输入
+	viper.SetDefault("session", "")      // 默认 session 为空
 }
 
 func LoadConfig(path string) (*Config, error) {
@@ -55,17 +58,15 @@ func GetConfig() *Config {
 }
 
 func SaveConfig(cfg *Config) error {
-	// 将结构体的值写回 viper
-	viper.Set("port", cfg.Port)
-	viper.Set("auto_type", cfg.AutoType)
-
-	// 写入配置文件（会覆盖原文件）
-	if err := viper.WriteConfig(); err != nil {
-		// 如果 WriteConfig 失败（比如文件不存在），可以尝试 WriteConfigAs
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			return viper.WriteConfigAs(viper.ConfigFileUsed())
-		}
+	// 将结构体转为 map
+	var m map[string]interface{}
+	if err := mapstructure.Decode(cfg, &m); err != nil {
 		return err
 	}
-	return nil
+	// 遍历设置
+	for k, v := range m {
+		viper.Set(k, v)
+	}
+
+	return viper.WriteConfig()
 }

@@ -22,11 +22,11 @@ type messageResponse struct {
 	} `json:"downlink_body"`
 }
 
-// getLatestMessage 获取最新一条用户消息，返回消息 ID 和文本内容
-func getLatestMessage(config *curlConfig) (string, string, error) {
-	config, err := getConfig("session.txt")
+// GetLatestMessage 获取最新一条用户消息，返回消息 ID 和文本内容
+func GetLatestMessage() (string, string, error) {
+	config, err := getConfig()
 	if err != nil {
-		fmt.Println("配置加载失败:", err)
+		return "", "", fmt.Errorf("配置加载失败: %w", err)
 	}
 
 	// 构建请求体
@@ -70,7 +70,7 @@ func getLatestMessage(config *curlConfig) (string, string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", "", nil
+		return "", "", fmt.Errorf("请求失败: %d", resp.StatusCode)
 	}
 
 	// 读取响应
@@ -93,16 +93,5 @@ func getLatestMessage(config *curlConfig) (string, string, error) {
 		}
 	}
 
-	return "", "", fmt.Errorf("未找到用户消息，请重新配置session.txt：%s", string(body))
-}
-
-func DeliverMessage() (string, string, error) {
-	config, err := getConfig("session.txt")
-	if err != nil {
-		fmt.Println("配置加载失败:", err)
-	}
-
-	msgID, msg, err := getLatestMessage(config)
-
-	return msgID, msg, err
+	return "", "", fmt.Errorf("未找到用户消息：%s", string(body))
 }

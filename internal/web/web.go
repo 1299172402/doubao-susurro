@@ -2,7 +2,6 @@ package web
 
 import (
 	_ "embed"
-	"os"
 
 	"github.com/gofiber/fiber/v3"
 
@@ -10,7 +9,6 @@ import (
 	"Doubao-input/info"
 	"Doubao-input/internal/config"
 	"Doubao-input/internal/core"
-	"Doubao-input/internal/tool/fileio"
 )
 
 var webApp *fiber.App
@@ -47,10 +45,7 @@ func StartWeb() {
 
 	// 获取 session
 	app.Get("/api/session", func(c fiber.Ctx) error {
-		data, err := os.ReadFile("session.txt")
-		if err != nil {
-			return c.JSON(fiber.Map{"content": ""})
-		}
+		data := config.GetConfig().Session
 		return c.JSON(fiber.Map{"content": string(data)})
 	})
 
@@ -62,15 +57,20 @@ func StartWeb() {
 		if err := c.Bind().JSON(&req); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": "Bad request"})
 		}
-		if err := fileio.WriteCurlFile("session.txt", req.Content); err != nil {
+
+		cfg := config.GetConfig()
+		cfg.Session = req.Content
+		config.SaveConfig(cfg)
+		if err := config.SaveConfig(cfg); err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Save failed"})
 		}
+
 		return c.JSON(fiber.Map{"ok": true})
 	})
 
 	// 获取最新消息
 	app.Get("/api/poll", func(c fiber.Ctx) error {
-		msgID, msg, err := core.DeliverMessage()
+		msgID, msg, err := core.GetLatestMessage()
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 		}

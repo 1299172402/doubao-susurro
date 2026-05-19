@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"Doubao-input/internal/tool/fileio"
+	"Doubao-input/internal/config"
 )
 
 // curlConfig 解析后的 curl 配置
@@ -90,12 +90,9 @@ func parseCurl(curlStr string) (*curlConfig, error) {
 	return config, nil
 }
 
-// getConfig 从 session.txt 解析配置
-func getConfig(filePath string) (*curlConfig, error) {
-	curlStr, err := fileio.ReadCurlFile(filePath)
-	if err != nil {
-		return nil, err
-	}
+// getConfig 从 config 中解析配置
+func getConfig() (*curlConfig, error) {
+	curlStr := config.GetConfig().Session
 
 	config, err := parseCurl(curlStr)
 	if err != nil {
