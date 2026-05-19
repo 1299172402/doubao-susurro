@@ -52,7 +52,7 @@
 
 | 菜单项 | 说明 |
 |--------|------|
-| ☑/☐ 自动输入 | 开启/关闭自动输入模式（自动将识别结果键入当前焦点窗口） |
+| 自动输入 | 开启/关闭自动输入模式（自动将识别结果键入当前焦点窗口） |
 | 设置 | 打开浏览器配置页面 |
 | 退出 | 退出程序 |
 
@@ -69,7 +69,7 @@
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
 | `DOUBAO_INPUT_PORT` | Web 服务端口 | `2828` |
-| `DOUBAO_INPUT_AUTO_TYPE` | 是否启用自动输入 | `false` |
+| `DOUBAO_INPUT_AUTO_TYPE` | 是否启用自动输入 | `true` |
 
 
 ### 开机自启（Windows）
@@ -79,11 +79,9 @@
 ```vbs
 Dim ws
 Set ws = Wscript.CreateObject("Wscript.Shell")
-ws.run "doubao-input-app-v1.1.3-windows-amd64.exe -silent",vbhide
+ws.run "doubao-input-app.exe -silent",vbhide
 Wscript.quit
 ```
-
-> ⚠️ 请将 `doubao-input-app-v1.1.3-windows-amd64.exe` 替换为你实际的可执行文件名。
 
 然后为 `doubao-input-start.vbs` 创建快捷方式，将快捷方式放入 Windows 开始菜单启动文件夹：
 
