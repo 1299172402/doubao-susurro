@@ -41,6 +41,8 @@
 
 前往 [Releases](https://github.com/1299172402/Doubao-input/releases) 页面下载对应平台的可执行文件。
 
+或者 [访问蓝奏云](https://zhiyuyu.lanzout.com/b01tqc738d?pwd=57rw) （密码：57rw）下载最新版本。
+
 **支持平台：**
 - Windows (amd64 / i386)
 - Linux (amd64)
@@ -71,10 +73,12 @@
 
 如果有需要合作或者定制开发的需求，也欢迎联系我！📞
 
-![](./assets/static/donate/wechat.png)
-
-
-![](./assets/static/donate/alipay.jpg)
+<table>
+  <tr>
+    <td align="center"><img src="./assets/static/donate/wechat.png" height="300"></td>
+    <td align="center"><img src="./assets/static/donate/alipay.jpg" height="300"></td>
+  </tr>
+</table>
 
 
 ---
