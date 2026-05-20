@@ -18,3 +18,9 @@ var StartupMacOSPlist string
 
 //go:embed static/startup/linux.desktop
 var StartupLinuxDesktop string
+
+//go:embed static/donate/alipay.jpg
+var DonateAlipay []byte
+
+//go:embed static/donate/wechat.png
+var DonateWechat []byte

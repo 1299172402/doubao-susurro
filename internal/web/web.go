@@ -39,6 +39,17 @@ func StartWeb() {
 		return c.Send(assets.LogoPNG)
 	})
 
+	// 捐赠图片
+	app.Get("/donate/wechat.png", func(c fiber.Ctx) error {
+		c.Set("Content-Type", "image/png")
+		return c.Send(assets.DonateWechat)
+	})
+	
+	app.Get("/donate/alipay.jpg", func(c fiber.Ctx) error {
+		c.Set("Content-Type", "image/jpeg")
+		return c.Send(assets.DonateAlipay)
+	})
+
 	// 版本号
 	app.Get("/api/version", func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{"version": info.Version})
