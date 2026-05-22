@@ -34,7 +34,7 @@ func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()               // 允许环境变量覆盖
-	viper.SetEnvPrefix("DOUBAO_INPUT") // 环境变量前缀
+	viper.SetEnvPrefix("DOUBAO_SUSURRO") // 环境变量前缀
 
 	// 先设置默认值
 	setDefaults()
@@ -60,7 +60,7 @@ func SelectConfigPath() string {
 		log.Fatal("获取执行文件路径失败: ", err)
 	}
 	exeDir := filepath.Dir(exePath)
-	configPath := filepath.Join(exeDir, "doubao-input-config.yml")
+	configPath := filepath.Join(exeDir, "Doubao-Susurro-config.yml")
 	stat, err := os.Stat(configPath)
 	if stat != nil && !os.IsNotExist(err) {
 		return configPath
@@ -71,7 +71,7 @@ func SelectConfigPath() string {
 	if err != nil {
 		log.Fatal("获取工作目录失败: ", err)
 	}
-	configPath = filepath.Join(workDir, "doubao-input-config.yml")
+	configPath = filepath.Join(workDir, "Doubao-Susurro-config.yml")
 	stat, err = os.Stat(configPath)
 	if stat != nil && !os.IsNotExist(err) {
 		return configPath
@@ -84,7 +84,7 @@ func SelectConfigPath() string {
 	}
 	exeDir = filepath.Dir(exePath)
 	// 配置文件路径
-	configPath = filepath.Join(exeDir, "doubao-input-config.yml")
+	configPath = filepath.Join(exeDir, "Doubao-Susurro-config.yml")
 
 	return configPath
 }

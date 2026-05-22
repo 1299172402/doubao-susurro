@@ -109,20 +109,20 @@ jobs:
           CXX: ${{ matrix.cxx }}
         run: |
           VERSION=${GITHUB_REF_NAME:-dev}
-          LDFLAGS="-s -w -X Doubao-input/info.Version=${VERSION}"
+          LDFLAGS="-s -w -X Doubao-Susurro/info.Version=${VERSION}"
           if [ "${{ matrix.goos }}" = "windows" ]; then
             LDFLAGS="${LDFLAGS} -H windowsgui"
           fi
-          go build -ldflags="${LDFLAGS}" -o "doubao-input${{ matrix.suffix }}" ./cmd/app
+          go build -ldflags="${LDFLAGS}" -o "Doubao-Susurro${{ matrix.suffix }}" ./cmd/app
         shell: bash
 
       # 上传构建产物
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: doubao-input-${{ github.ref_name || 'dev' }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: Doubao-Susurro-${{ github.ref_name || 'dev' }}-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
-            doubao-input${{ matrix.suffix }}
+            Doubao-Susurro${{ matrix.suffix }}
 
   # 仅在推送 tag 时创建 GitHub Release 并附加所有产物
   release:

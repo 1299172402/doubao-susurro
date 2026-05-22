@@ -1,7 +1,7 @@
 package tool
 
 import (
-	"Doubao-input/internal/config"
+	"Doubao-Susurro/internal/config"
 	"fmt"
 	"os/exec"
 	"runtime"

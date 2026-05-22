@@ -1,12 +1,12 @@
 package main
 
 import (
-	"Doubao-input/internal/config"
-	"Doubao-input/internal/core"
-	"Doubao-input/internal/system"
-	"Doubao-input/internal/system/lock"
-	"Doubao-input/internal/tool"
-	"Doubao-input/internal/web"
+	"Doubao-Susurro/internal/config"
+	"Doubao-Susurro/internal/core"
+	"Doubao-Susurro/internal/system"
+	"Doubao-Susurro/internal/system/lock"
+	"Doubao-Susurro/internal/tool"
+	"Doubao-Susurro/internal/web"
 	"flag"
 	"fmt"
 	"os"
@@ -20,7 +20,7 @@ func main() {
 	config.InitConfig()
 
 	// 确保单实例运行
-	unlock, err := lock.TryLock("doubao-input")
+	unlock, err := lock.TryLock("Doubao-Susurro")
 	if err != nil {
 		fmt.Println(err)
 		tool.OpenBrowser()

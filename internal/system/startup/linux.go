@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"Doubao-input/assets"
+	"Doubao-Susurro/assets"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,7 +25,7 @@ func installLinuxStartup() error {
 	}
 
 	desktopContent := fmt.Sprintf(assets.StartupLinuxDesktop, exePath)
-	desktopPath := filepath.Join(autostartDir, "doubao-input.desktop")
+	desktopPath := filepath.Join(autostartDir, "Doubao-Susurro.desktop")
 
 	if err := os.WriteFile(desktopPath, []byte(desktopContent), 0644); err != nil {
 		return fmt.Errorf("写入 desktop 文件失败: %v", err)
@@ -40,7 +40,7 @@ func uninstallLinuxStartup() error {
 		return fmt.Errorf("获取用户目录失败: %v", err)
 	}
 
-	desktopPath := filepath.Join(homeDir, ".config", "autostart", "doubao-input.desktop")
+	desktopPath := filepath.Join(homeDir, ".config", "autostart", "Doubao-Susurro.desktop")
 
 	if err := os.Remove(desktopPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("删除 desktop 文件失败: %v", err)

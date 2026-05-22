@@ -6,10 +6,10 @@ import (
 
 	"fmt"
 
-	"Doubao-input/assets"
-	"Doubao-input/internal/config"
-	"Doubao-input/internal/system/startup"
-	"Doubao-input/internal/tool"
+	"Doubao-Susurro/assets"
+	"Doubao-Susurro/internal/config"
+	"Doubao-Susurro/internal/system/startup"
+	"Doubao-Susurro/internal/tool"
 
 	"github.com/energye/systray"
 )

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	global_config "Doubao-input/internal/config"
+	global_config "Doubao-Susurro/internal/config"
 )
 
 // curlConfig 解析后的 curl 配置

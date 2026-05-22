@@ -52,7 +52,7 @@ go run ./cmd/app
 │           └── macos.plist           # macOS LaunchAgent 配置模板
 ├── info/
 │   └── version.go                    # 版本号定义（构建时注入）
-├── doubao-input-config.yml           # 运行时生成的配置文件
+├── Doubao-Susurro-config.yml           # 运行时生成的配置文件
 └── go.mod
 ```
 
@@ -63,7 +63,7 @@ go run ./cmd/app
 主程序入口。启动流程：
 
 1. 解析命令行参数（`-silent`）
-2. 加载配置文件 `doubao-input-config.yml`（不存在则自动创建）
+2. 加载配置文件 `Doubao-Susurro-config.yml`（不存在则自动创建）
 3. 获取单实例锁（防止重复启动）
 4. 后台启动消息轮询（`core.StartPolling`）
 5. 后台启动 Web 服务（`web.StartWeb`）
@@ -72,7 +72,7 @@ go run ./cmd/app
 
 ### `internal/config/config.go`
 
-基于 [Viper](https://github.com/spf13/viper) 的配置管理。配置文件为 YAML 格式，环境变量前缀为 `DOUBAO_INPUT`。
+基于 [Viper](https://github.com/spf13/viper) 的配置管理。配置文件为 YAML 格式，环境变量前缀为 `DOUBAO_SUSURRO`。
 
 ```go
 type Config struct {
@@ -164,7 +164,7 @@ API 端点：
 版本号定义，通过 `ldflags` 在构建时注入：
 
 ```bash
-go build -ldflags="-X Doubao-input/info.Version=v1.0.0" ./cmd/app
+go build -ldflags="-X Doubao-Susurro/info.Version=v1.0.0" ./cmd/app
 ```
 
 未注入时默认值为 `"dev"`。

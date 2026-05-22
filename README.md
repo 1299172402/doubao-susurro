@@ -1,4 +1,4 @@
-# [Doubao Input](https://github.com/1299172402/Doubao-input) – 开源跨设备输入工具
+# [Doubao Susurro](https://github.com/1299172402/Doubao-Susurro) – 开源跨设备输入工具
 
 开源跨设备输入工具，依托手机豆包应用即可使用，无需额外安装程序。手机书写、口述的文字可一键直传电脑任意输入框，顺畅衔接日常办公与创作流程。
 
@@ -20,7 +20,7 @@
 
 ## 📥 立即下载
 
-前往 [Releases](https://github.com/1299172402/Doubao-input/releases) 页面下载对应平台的可执行文件。
+前往 [Releases](https://github.com/1299172402/Doubao-Susurro/releases) 页面下载对应平台的可执行文件。
 
 或者 [访问蓝奏云](https://zhiyuyu.lanzout.com/b01tqc738d?pwd=57rw) （密码：`57rw`）下载最新版本。
 
@@ -38,7 +38,7 @@
     * 右键该请求 → **Copy** → **Copy as cURL (Bash)**。
 
 2.  **启动并配置**：
-    * 双击运行 `doubao-input.exe`，浏览器会自动打开配置页面。
+    * 双击运行 `Doubao-Susurro.exe`，浏览器会自动打开配置页面。
     * 将复制的 cURL 内容粘贴进去，点击「💾 保存配置」。
     * 点击「🚀 获取消息」测试一下是否正常。
 

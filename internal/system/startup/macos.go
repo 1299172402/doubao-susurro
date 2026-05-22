@@ -1,7 +1,7 @@
 package startup
 
 import (
-	"Doubao-input/assets"
+	"Doubao-Susurro/assets"
 	"fmt"
 	"os"
 	"os/exec"
@@ -27,7 +27,7 @@ func installMacOSStartup() error {
 	}
 
 	plistContent := fmt.Sprintf(assets.StartupMacOSPlist, exePath)
-	plistPath := filepath.Join(launchAgentsDir, "com.doubao.input.plist")
+	plistPath := filepath.Join(launchAgentsDir, "com.doubao.susurro.plist")
 
 	if err := os.WriteFile(plistPath, []byte(plistContent), 0644); err != nil {
 		return fmt.Errorf("写入 plist 文件失败: %v", err)
@@ -48,7 +48,7 @@ func uninstallMacOSStartup() error {
 		return fmt.Errorf("获取用户目录失败: %v", err)
 	}
 
-	plistPath := filepath.Join(homeDir, "Library/LaunchAgents", "com.doubao.input.plist")
+	plistPath := filepath.Join(homeDir, "Library/LaunchAgents", "com.doubao.susurro.plist")
 
 	// 卸载任务（忽略错误，可能未加载）
 	exec.Command("launchctl", "unload", "-w", plistPath).Run()

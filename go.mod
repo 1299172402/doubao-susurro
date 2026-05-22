@@ -1,4 +1,4 @@
-module Doubao-input
+module Doubao-Susurro
 
 go 1.25.0
 

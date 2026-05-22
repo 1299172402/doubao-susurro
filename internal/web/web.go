@@ -5,11 +5,11 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 
-	"Doubao-input/assets"
-	"Doubao-input/info"
-	"Doubao-input/internal/config"
-	"Doubao-input/internal/core"
-	"Doubao-input/internal/system/startup"
+	"Doubao-Susurro/assets"
+	"Doubao-Susurro/info"
+	"Doubao-Susurro/internal/config"
+	"Doubao-Susurro/internal/core"
+	"Doubao-Susurro/internal/system/startup"
 )
 
 var webApp *fiber.App

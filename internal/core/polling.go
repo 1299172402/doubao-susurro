@@ -1,7 +1,7 @@
 package core
 
 import (
-	"Doubao-input/internal/config"
+	"Doubao-Susurro/internal/config"
 	"fmt"
 	"time"
 

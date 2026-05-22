@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"Doubao-input/assets"
+	"Doubao-Susurro/assets"
 )
 
 // Windows 实现
@@ -23,7 +23,7 @@ func installWindowsStartup() error {
 
 	startupDir := filepath.Join(appData, "Microsoft\\Windows\\Start Menu\\Programs\\Startup")
 	vbsContent := fmt.Sprintf(assets.StartupWindowsVBS, exePath)
-	vbsPath := filepath.Join(startupDir, "doubao-input-startup.vbs")
+	vbsPath := filepath.Join(startupDir, "Doubao-Susurro-startup.vbs")
 
 	if err := os.WriteFile(vbsPath, []byte(vbsContent), 0644); err != nil {
 		return fmt.Errorf("写入 VBS 文件失败: %v", err)
@@ -39,7 +39,7 @@ func uninstallWindowsStartup() error {
 	}
 
 	startupDir := filepath.Join(appData, "Microsoft\\Windows\\Start Menu\\Programs\\Startup")
-	vbsPath := filepath.Join(startupDir, "doubao-input-startup.vbs")
+	vbsPath := filepath.Join(startupDir, "Doubao-Susurro-startup.vbs")
 
 	if err := os.Remove(vbsPath); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("删除 VBS 文件失败: %v", err)
