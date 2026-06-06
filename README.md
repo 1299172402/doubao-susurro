@@ -34,7 +34,7 @@
 1.  **获取配置文件**：
     * 打开 [豆包网页版](https://www.doubao.com)，登录并进入一个对话。
     * 按 <kbd>F12</kbd> 打开开发者工具 → **Network**（网络）标签。
-    * 在对话中发送一条消息，找到最新一条 `single`（`https://www.doubao.com/im/chain/single`）请求。
+    * 点击网页中的任意一个对话 → 在 **Network**（网络） 中寻找最新一条 `single`（`https://www.doubao.com/im/chain/single`）请求。
     * 右键该请求 → **Copy** → **Copy as cURL (Bash)**。
 
 2.  **启动并配置**：
