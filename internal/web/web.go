@@ -44,7 +44,7 @@ func StartWeb() {
 		c.Set("Content-Type", "image/png")
 		return c.Send(assets.DonateWechat)
 	})
-	
+
 	app.Get("/donate/alipay.jpg", func(c fiber.Ctx) error {
 		c.Set("Content-Type", "image/jpeg")
 		return c.Send(assets.DonateAlipay)
@@ -71,16 +71,18 @@ func StartWeb() {
 			"interval_time":      cfg.IntervalTime,
 			"startup":            cfg.Startup,
 			"port":               cfg.Port,
+			"conversation_id":    cfg.ConversationID,
 		})
 	})
 
 	// 保存配置
 	app.Post("/api/config/save", func(c fiber.Ctx) error {
 		var req struct {
-			AutoType          *bool `json:"auto_type"`
-			ConversationLimit *int  `json:"conversation_limit"`
-			IntervalTime      *int  `json:"interval_time"`
-			Startup           *bool `json:"startup"`
+			AutoType          *bool   `json:"auto_type"`
+			ConversationLimit *int    `json:"conversation_limit"`
+			IntervalTime      *int    `json:"interval_time"`
+			Startup           *bool   `json:"startup"`
+			ConversationID    *string `json:"conversation_id"`
 		}
 		if err := c.Bind().JSON(&req); err != nil {
 			return c.Status(400).JSON(fiber.Map{"error": "Bad request"})
@@ -96,6 +98,10 @@ func StartWeb() {
 		if req.IntervalTime != nil {
 			cfg.IntervalTime = *req.IntervalTime
 		}
+		if req.ConversationID != nil {
+			cfg.ConversationID = *req.ConversationID
+		}
+
 		if req.Startup != nil {
 			newStartupState := *req.Startup
 

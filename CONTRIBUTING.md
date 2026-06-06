@@ -56,6 +56,23 @@ go run ./cmd/app
 └── go.mod
 ```
 
+## 前端说明
+
+Web 设置界面（`assets/static/index.html`）为单页应用，主要功能：
+
+| 区域 | 说明 |
+|------|------|
+| Session 输入框 | 粘贴从豆包复制的 cURL 命令 |
+| 保存配置按钮 | 保存 Session 内容 |
+| 获取消息按钮 | 手动拉取一次最新消息 |
+| 自动输入开关 | 切换后自动保存 |
+| 开机自启开关 | 切换后自动保存 |
+| 获取数量 | 数字输入，修改后自动保存 |
+| 对话 ID | 文本输入，留空则自动从 curl 中提取；修改后自动保存 |
+| 请求间隔 | 数字输入，修改后自动保存 |
+
+所有设置项修改后均通过 `onchange` 事件**自动保存**到后端，并显示 Toast 提示。
+
 ## 模块说明
 
 ### `cmd/app/main.go`
@@ -82,6 +99,7 @@ type Config struct {
     Session           string `mapstructure:"session"`            // 从豆包复制的 cURL 命令
     ConversationLimit int    `mapstructure:"conversation_limit"` // 单次获取对话数量，默认 5
     IntervalTime      int    `mapstructure:"interval_time"`      // 轮询间隔（毫秒），默认 1000
+    ConversationID    string `mapstructure:"conversation_id"`    // 对话 ID，留空自动从 curl 中提取
 }
 ```
 
@@ -94,7 +112,11 @@ type Config struct {
 解析从豆包复制的 cURL 命令，提取 URL、请求头、Cookie、请求体等信息。
 
 - `parseCurl(curlStr)` — 解析 cURL 字符串，返回 `curlConfig` 结构
-- `getConfig()` — 从全局配置读取 session 并解析，自动修正 `direction` 和 `anchor_index` 参数
+- `getConfig()` — 从全局配置读取 session 并解析，自动修正请求参数：
+  - `direction` → `0`（从旧到新）
+  - `anchor_index` → `0`（从最新开始）
+  - `limit` → 使用配置中的 `conversation_limit`
+  - `conversation_id` → 如果配置了 `conversation_id` 则覆盖 body 和 `referer` 头中的对话 ID
 
 ### `internal/core/listener.go`
 
@@ -148,6 +170,8 @@ API 端点：
 | GET | `/api/config` | 获取所有配置 |
 | POST | `/api/config/save` | 保存配置 |
 | GET | `/api/poll` | 手动获取最新消息 |
+| GET | `/donate/wechat.png` | 微信收款码 |
+| GET | `/donate/alipay.jpg` | 支付宝收款码 |
 
 ### `assets/asset.go`
 
@@ -222,20 +246,8 @@ go build -ldflags="-X Doubao-Susurro/info.Version=v1.0.0" ./cmd/app
 
 版本号定义，默认值为 `"dev"`，通过 `go build -ldflags` 在构建时注入。
 
-## 依赖
-
-| 包名 | 用途 |
-|------|------|
-| `github.com/energye/systray` | 系统托盘 |
-| `github.com/atotto/clipboard` | 剪贴板读写 |
-| `github.com/go-vgo/robotgo` | 键盘自动输入 |
-| `github.com/gofiber/fiber/v3` | Web 框架 |
-| `github.com/spf13/viper` | 配置管理（YAML + 环境变量） |
-| `github.com/mitchellh/mapstructure` | 结构体与 map 转换 |
-
 
 ## 已放弃的开发（如果有人想尝试也OK）
 
 - 原始的 fyne 库实现：虽然现在 `github.com/fyne-io/systray` （或者其他从 `github.com/getlantern/systray` 衍生出的托盘界面）也能用，但是不支持高 DPI ，界面会很模糊，所以一直想用原始的 github.com/fyne-io/fyne 库实现，但是甚至没法运行他的 demo 。
 - 注册为服务：尝试过 `github.com/kardianos/service` 库来注册为系统服务，结果可以 install / uninstall 但是无法启动。
-- 在配置文件中添加 `conversation_id` 字段，允许用户指定会话 ID 以获取特定对话的消息：其实直接观察一下配置文件就知道 conversation_id 在 curl 的哪里，直接修改就行

@@ -401,6 +401,68 @@
             outline: none;
             border-color: #4a90d9;
         }
+
+        .setting-input-wide {
+            width: 180px;
+        }
+
+        #toastBox {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 1.5s forwards;
+            pointer-events: auto;
+        }
+
+        .toast-ok {
+            background: #e6f7e6;
+            color: #389e0d;
+            border: 1px solid #b7eb8f;
+        }
+
+        .toast-err {
+            background: #fff2f0;
+            color: #cf1322;
+            border: 1px solid #ffa39e;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
     </style>
 </head>
 
@@ -431,7 +493,7 @@
                     <div class="setting-desc">获取消息后自动粘贴到输入框</div>
                 </div>
                 <label class="toggle">
-                    <input type="checkbox" id="settingAutoType">
+                    <input type="checkbox" id="settingAutoType" onchange="saveSettings()">
                     <span class="toggle-slider"></span>
                 </label>
             </div>
@@ -442,17 +504,9 @@
                     <div class="setting-desc">系统启动时自动运行</div>
                 </div>
                 <label class="toggle">
-                    <input type="checkbox" id="settingStartup">
+                    <input type="checkbox" id="settingStartup" onchange="saveSettings()">
                     <span class="toggle-slider"></span>
                 </label>
-            </div>
-
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">获取数量</div>
-                    <div class="setting-desc">单次获取对话消息数</div>
-                </div>
-                <input type="number" class="setting-input" id="settingConvLimit" min="1" max="100" value="5">
             </div>
 
             <div class="setting-row">
@@ -461,10 +515,27 @@
                     <div class="setting-desc">自动轮询的时间间隔</div>
                 </div>
                 <input type="number" class="setting-input" id="settingInterval" min="100" max="60000" step="100"
-                    value="1000">
+                    value="1000" onchange="saveSettings()">
             </div>
 
-            <button class="btn btn-save" onclick="saveSettings()" style="margin-top: 12px;">💾 保存设置</button>
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">获取数量</div>
+                    <div class="setting-desc">单次获取对话消息数，调低可节约流量</div>
+                </div>
+                <input type="number" class="setting-input" id="settingConvLimit" min="1" max="100" value="5"
+                    onchange="saveSettings()">
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div class="setting-label">对话 ID</div>
+                    <div class="setting-desc">可用于切换获取消息的会话，留空则保持默认</div>
+                </div>
+                <input type="text" class="setting-input setting-input-wide" id="settingConvID"
+                    onchange="saveSettings()">
+            </div>
+
         </div>
     </div>
 
@@ -479,7 +550,8 @@
             <ol>
                 <li>打开 <a href="https://www.doubao.com" target="_blank">豆包网页版</a>，登录并进入一个对话</li>
                 <li>按 <kbd>F12</kbd> 打开开发者工具 → <strong>Network</strong> / <strong>网络</strong> 标签</li>
-                <li>在对话中发送一条消息，找到 <code>single</code>（<code>https://www.doubao.com/im/chain/single</code>）请求</li>
+                <li>点击网页中的任意一个对话 → 在 <strong>Network</strong> / <strong>网络</strong> 中
+                    寻找最新一条 <code>single</code>（<code>https://www.doubao.com/im/chain/single</code>）请求</li>
                 <li>右键该请求 → <strong>Copy</strong> / <strong>复制</strong> → <strong>Copy as cURL (Bash)</strong> /
                     <strong>复制为 cURL (Bash)</strong>
                 </li>
@@ -564,9 +636,20 @@
                 document.getElementById('settingAutoType').checked = d.auto_type;
                 document.getElementById('settingStartup').checked = d.startup;
                 document.getElementById('settingConvLimit').value = d.conversation_limit;
+                document.getElementById('settingConvID').value = d.conversation_id || '';
                 document.getElementById('settingInterval').value = d.interval_time;
             }
         });
+
+        // 显示 Toast 提示
+        function showToast(msg, type) {
+            const box = document.getElementById('toastBox');
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.textContent = msg;
+            box.appendChild(el);
+            setTimeout(() => el.remove(), 2000);
+        }
 
         // 保存设置
         async function saveSettings() {
@@ -574,6 +657,7 @@
                 auto_type: document.getElementById('settingAutoType').checked,
                 startup: document.getElementById('settingStartup').checked,
                 conversation_limit: parseInt(document.getElementById('settingConvLimit').value) || 5,
+                conversation_id: document.getElementById('settingConvID').value.trim() || '',
                 interval_time: parseInt(document.getElementById('settingInterval').value) || 1000,
             };
             const res = await fetch('/api/config/save', {
@@ -582,7 +666,11 @@
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
-            showResult(data.ok ? '✅ 设置已保存' : '❌ 保存失败', data.ok ? 'ok' : 'err');
+            if (data.ok) {
+                showToast('✅ 已保存', 'ok');
+            } else {
+                showToast('❌ 保存失败', 'err');
+            }
         }
 
         // 定时更新相对时间
