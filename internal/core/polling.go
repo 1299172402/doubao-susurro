@@ -35,7 +35,7 @@ func StartPolling() {
 
 			// 自动输入
 			if config.GetConfig().AutoType && !firstRun {
-				robotgo.Type(msg)
+				robotgo.KeyTap("v", "ctrl")
 			}
 
 			firstRun = false
