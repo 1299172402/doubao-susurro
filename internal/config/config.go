@@ -19,6 +19,7 @@ type Config struct {
 	Session           string `mapstructure:"session"`
 	ConversationLimit int    `mapstructure:"conversation_limit"`
 	IntervalTime      int    `mapstructure:"interval_time"`
+	ConversationID    string `mapstructure:"conversation_id"`
 }
 
 func setDefaults() {
@@ -28,6 +29,7 @@ func setDefaults() {
 	viper.SetDefault("session", "")           // 默认 session 为空
 	viper.SetDefault("conversation_limit", 5) // 单次获取对话数量
 	viper.SetDefault("interval_time", 1000)   // 默认请求间隔时间（毫秒）
+	viper.SetDefault("conversation_id", "")   // 对话 ID，留空自动从 curl 中提取
 }
 
 func LoadConfig(path string) (*Config, error) {

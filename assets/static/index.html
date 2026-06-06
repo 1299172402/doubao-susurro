@@ -402,6 +402,10 @@
             border-color: #4a90d9;
         }
 
+        .setting-input-wide {
+            width: 180px;
+        }
+
         #toastBox {
             position: fixed;
             top: 20px;
@@ -507,6 +511,15 @@
 
             <div class="setting-row">
                 <div>
+                    <div class="setting-label">请求间隔 (ms)</div>
+                    <div class="setting-desc">自动轮询的时间间隔</div>
+                </div>
+                <input type="number" class="setting-input" id="settingInterval" min="100" max="60000" step="100"
+                    value="1000" onchange="saveSettings()">
+            </div>
+
+            <div class="setting-row">
+                <div>
                     <div class="setting-label">获取数量</div>
                     <div class="setting-desc">单次获取对话消息数，调低可节约流量</div>
                 </div>
@@ -516,11 +529,11 @@
 
             <div class="setting-row">
                 <div>
-                    <div class="setting-label">请求间隔 (ms)</div>
-                    <div class="setting-desc">自动轮询的时间间隔</div>
+                    <div class="setting-label">对话 ID</div>
+                    <div class="setting-desc">可用于切换获取消息的会话，留空则保持默认</div>
                 </div>
-                <input type="number" class="setting-input" id="settingInterval" min="100" max="60000" step="100"
-                    value="1000" onchange="saveSettings()">
+                <input type="text" class="setting-input setting-input-wide" id="settingConvID"
+                    onchange="saveSettings()">
             </div>
 
         </div>
@@ -623,6 +636,7 @@
                 document.getElementById('settingAutoType').checked = d.auto_type;
                 document.getElementById('settingStartup').checked = d.startup;
                 document.getElementById('settingConvLimit').value = d.conversation_limit;
+                document.getElementById('settingConvID').value = d.conversation_id || '';
                 document.getElementById('settingInterval').value = d.interval_time;
             }
         });
@@ -643,6 +657,7 @@
                 auto_type: document.getElementById('settingAutoType').checked,
                 startup: document.getElementById('settingStartup').checked,
                 conversation_limit: parseInt(document.getElementById('settingConvLimit').value) || 5,
+                conversation_id: document.getElementById('settingConvID').value.trim() || '',
                 interval_time: parseInt(document.getElementById('settingInterval').value) || 1000,
             };
             const res = await fetch('/api/config/save', {

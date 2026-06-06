@@ -99,12 +99,26 @@ func getConfig() (*curlConfig, error) {
 		return nil, err
 	}
 
-	// 修改 payload 中的 direction 和 anchor_index
+	// 修改 payload 中的 direction、anchor_index、conversation_id
 	if uplink, ok := config.Payload["uplink_body"].(map[string]interface{}); ok {
 		if body, ok := uplink["pull_singe_chain_uplink_body"].(map[string]interface{}); ok {
 			body["direction"] = 0
 			body["anchor_index"] = 0
 			body["limit"] = global_config.GetConfig().ConversationLimit
+
+			// 如果配置了 conversation_id，则覆盖
+			if cid := global_config.GetConfig().ConversationID; cid != "" {
+				body["conversation_id"] = cid
+			}
+		}
+	}
+
+	// 如果配置了 conversation_id，同步更新 referer 头
+	if cid := global_config.GetConfig().ConversationID; cid != "" {
+		if ref, ok := config.Headers["referer"]; ok {
+			// 替换 referer URL 中的 conversation_id 部分
+			re := regexp.MustCompile(`/chat/\d+`)
+			config.Headers["referer"] = re.ReplaceAllString(ref, "/chat/"+cid)
 		}
 	}
 
