@@ -26,7 +26,7 @@
 
 前往 [Releases](https://github.com/1299172402/Doubao-Susurro/releases) 页面下载对应平台的可执行文件。
 
-或者 [访问蓝奏云](https://zhiyuyu.lanzout.com/b01tqc738d?pwd=57rw) （密码：`57rw`）下载最新版本。
+或者 [访问蓝奏云](https://zhiyuyu.lanzout.com/b01tqc738d?pwd=susu) （密码：`susu`）下载最新版本。
 
 **支持平台：**
 - Windows (amd64 / i386)
