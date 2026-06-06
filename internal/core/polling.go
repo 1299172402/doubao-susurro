@@ -13,6 +13,9 @@ import (
 var lastMessageID string
 
 func StartPolling() {
+	// 启动时跳过最近一条消息，避免一启动就自动输入旧消息
+	firstRun := true
+
 	for {
 		msgID, msg, err := GetLatestMessage()
 		if err != nil {
@@ -31,9 +34,12 @@ func StartPolling() {
 			clipboard.WriteAll(msg)
 
 			// 自动输入
-			if config.GetConfig().AutoType {
+			if config.GetConfig().AutoType && !firstRun {
 				robotgo.Type(msg)
 			}
+
+			firstRun = false
+
 		}
 
 		time.Sleep(time.Duration(config.GetConfig().IntervalTime) * time.Millisecond)
