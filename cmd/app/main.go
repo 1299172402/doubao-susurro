@@ -14,10 +14,11 @@ import (
 
 func main() {
 	silent := flag.Bool("silent", false, "静默模式，不打开浏览器")
+	configPath := flag.String("config", "", "配置文件路径，默认可执行文件所在目录下的 Doubao-Susurro-config.yml")
 	flag.Parse()
 
 	// 加载配置
-	config.InitConfig()
+	config.InitConfig(*configPath)
 
 	// 确保单实例运行
 	unlock, err := lock.TryLock("Doubao-Susurro")

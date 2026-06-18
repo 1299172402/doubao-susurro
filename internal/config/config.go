@@ -35,7 +35,7 @@ func setDefaults() {
 func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigFile(path)
 	viper.SetConfigType("yaml")
-	viper.AutomaticEnv()               // 允许环境变量覆盖
+	viper.AutomaticEnv()                 // 允许环境变量覆盖
 	viper.SetEnvPrefix("DOUBAO_SUSURRO") // 环境变量前缀
 
 	// 先设置默认值
@@ -55,45 +55,17 @@ func LoadConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
-func SelectConfigPath() string {
-	// 先看可执行文件所在目录有没有配置文件
-	exePath, err := os.Executable()
-	if err != nil {
-		log.Fatal("获取执行文件路径失败: ", err)
+func InitConfig(configPath string) {
+	// 如果没有传入路径，使用默认路径
+	if configPath == "" {
+		// 默认使用可执行文件所在目录作为配置文件路径
+		exePath, err := os.Executable()
+		if err != nil {
+			log.Fatal("获取执行文件路径失败: ", err)
+		}
+		exeDir := filepath.Dir(exePath)
+		configPath = filepath.Join(exeDir, "Doubao-Susurro-config.yml")
 	}
-	exeDir := filepath.Dir(exePath)
-	configPath := filepath.Join(exeDir, "Doubao-Susurro-config.yml")
-	stat, err := os.Stat(configPath)
-	if stat != nil && !os.IsNotExist(err) {
-		return configPath
-	}
-
-	// 没有的话看当前工作目录有没有配置文件
-	workDir, err := os.Getwd()
-	if err != nil {
-		log.Fatal("获取工作目录失败: ", err)
-	}
-	configPath = filepath.Join(workDir, "Doubao-Susurro-config.yml")
-	stat, err = os.Stat(configPath)
-	if stat != nil && !os.IsNotExist(err) {
-		return configPath
-	}
-
-	// 如果还是没有，返回可执行文件目录作为默认路径
-	exePath, err = os.Executable()
-	if err != nil {
-		log.Fatal("获取执行文件路径失败: ", err)
-	}
-	exeDir = filepath.Dir(exePath)
-	// 配置文件路径
-	configPath = filepath.Join(exeDir, "Doubao-Susurro-config.yml")
-
-	return configPath
-}
-
-func InitConfig() {
-	// 配置文件路径
-	configPath := SelectConfigPath()
 
 	cfg, err := LoadConfig(configPath)
 	if err != nil {
