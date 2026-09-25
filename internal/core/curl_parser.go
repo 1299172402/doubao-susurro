@@ -28,11 +28,11 @@ func parseCurl(curlStr string) (*curlConfig, error) {
 		Payload: make(map[string]interface{}),
 	}
 
-	// 提取 URL（支持单引号和双引号）
-	urlRegex := regexp.MustCompile(`curl\s+'([^']+)'`)
+	// 提取 URL（支持单引号和双引号，兼容 curl 'URL' 与 curl --url 'URL'）
+	urlRegex := regexp.MustCompile(`curl\s+(?:--url\s+)?'([^']+)'`)
 	matches := urlRegex.FindStringSubmatch(curlStr)
 	if matches == nil {
-		urlRegex = regexp.MustCompile(`curl\s+"([^"]+)"`)
+		urlRegex = regexp.MustCompile(`curl\s+(?:--url\s+)?"([^"]+)"`)
 		matches = urlRegex.FindStringSubmatch(curlStr)
 	}
 	if matches == nil {
